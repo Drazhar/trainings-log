@@ -6,5 +6,50 @@
 }
 
 body {
-  background-color: #284452;
+  height: 100vh;
+  background-color: #232c34;
+  background: radial-gradient(
+    circle at top right,
+    hsl(200, 30, 15),
+    hsl(200, 30, 12)
+  );
+  background-repeat: no-repeat;
+
+  display: grid;
+  grid-template-rows: auto 4.5rem;
+}
+
+main {
+  overflow-y: scroll;
+}
+
+nav {
+  background-color: rgb(34, 41, 49);
+  border-top: 2px solid hsla(194, 50, 50, 0.2);
+  box-shadow: 0 0 7rem 5rem rgba(35, 69, 83, 0.07),
+    0 0 2rem 2rem rgba(19, 204, 193, 0.03),
+    inset 0 4rem 4rem -3rem rgba(19, 204, 193, 0.07);
+
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+}
+
+.nav-button {
+  font-size: 0.85em;
+  opacity: 0.8;
+  background-color: none;
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 85%;
+
+  img {
+    height: 2.1rem;
+  }
+
+  p {
+    color: hsla(0, 0, 100, 0.7);
+  }
 }
