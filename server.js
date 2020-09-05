@@ -1,5 +1,18 @@
 // Imports
 const express = require('express');
+const { connectToDB } = require('./src/mysql');
+
+// connect to database
+let connectionDB = connectToDB().then(
+  (res) => {
+    console.log('connected as id ' + res.threadId);
+    return res;
+  },
+  (rej) => {
+    console.error('error connecting to mySQL server: ' + rej.stack);
+    return false;
+  }
+);
 
 // Basic settings
 const app = express();
@@ -17,7 +30,12 @@ app.use(function (req, res, next) {
 });
 
 // APIs
-app.post('/api/createSchedule', (req, res) => {});
+app.get('/api/addUser', (req, res) => {
+  connectionDB.query('SELECT * FROM user', (err, results) => {
+    console.log('Error: ', err);
+    console.log('Results: ', results);
+  });
+});
 
 // listen to something
 app.listen(port, () =>
