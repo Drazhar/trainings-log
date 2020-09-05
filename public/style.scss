@@ -1,3 +1,10 @@
+$background-color: #00111a;
+$background-color-sec: #001724;
+
+$nav-bg-color: #002033;
+$nav-highlight: #007ec7;
+$glow-color: #00f2fa;
+
 * {
   padding: 0;
   margin: 0;
@@ -5,13 +12,32 @@
   font-family: 'Roboto', sans-serif;
 }
 
+.userAvatar {
+  position: fixed;
+  right: 0.5em;
+  top: 0.5em;
+  height: 4em;
+  width: 4em;
+  border-radius: 50%;
+  overflow: hidden;
+
+  img {
+    width: 100%;
+    height: auto;
+  }
+
+  &:hover {
+    cursor: pointer;
+  }
+}
+
 body {
   height: 100vh;
-  background-color: #232c34;
+  background-color: $background-color;
   background: radial-gradient(
     circle at top right,
-    hsl(200, 30, 15),
-    hsl(200, 30, 12)
+    $background-color-sec,
+    $background-color
   );
   background-repeat: no-repeat;
 
@@ -24,12 +50,11 @@ main {
 }
 
 nav {
-  background-color: rgb(34, 41, 49);
-  border-top: 1px solid hsla(194, 50, 50, 0.2);
-  box-shadow: 0 0 7rem 5rem rgba(35, 69, 83, 0.08),
-    0 0 2rem 2rem rgba(19, 204, 193, 0.04),
-    inset 0 4rem 4rem -3rem rgba(19, 204, 193, 0.08);
-
+  background-color: $nav-bg-color;
+  border-top: 1px solid rgba($nav-highlight, 0.1);
+  box-shadow: 0 0 5rem 5rem rgba($glow-color, 0.04),
+    0 0 2rem 2rem rgba($glow-color, 0.03),
+    inset 0 4rem 4rem -3rem rgba($glow-color, 0.06);
   display: flex;
   align-items: center;
   justify-content: space-around;
