@@ -7,7 +7,8 @@
   "scripts": {
     "start": "webpack-dev-server --config webpack.dev.js --history-api-fallback --open",
     "test": "jest --watch",
-    "node": "nodemon"
+    "node": "nodemon",
+    "build": "webpack --config webpack.prod.js"
   },
   "keywords": [],
   "author": "Philip Trauth",
@@ -19,7 +20,7 @@
     "html-webpack-plugin": "^4.4.1",
     "jest": "^26.4.2",
     "lit-element": "^2.4.0",
-    "nanoid": "^3.1.12",
+    "mini-css-extract-plugin": "^0.11.0",
     "nodemon": "^2.0.4",
     "sass": "^1.26.10",
     "sass-loader": "^10.0.1",

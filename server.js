@@ -8,6 +8,9 @@ const { render } = require('sass');
 const app = express();
 const port = process.env.PORT || 3000;
 
+// Static routes
+app.use(express.static('static'));
+
 // Connect to database
 const connectionPool = (pool = mysql.createPool({
   connectionLimit: 10,
@@ -16,23 +19,20 @@ const connectionPool = (pool = mysql.createPool({
   database: private.database,
 }));
 
-app.use((req, res, next) => {
-  req.db = connectionPool;
-  next();
-});
-
 // Middleware
 app.use(express.json({ limit: '100kb' }));
-app.use(function (req, res, next) {
+app.use((req, res, next) => {
   res.header('Access-Control-Allow-Origin', '*');
   res.header(
     'Access-Control-Allow-Headers',
     'Origin, X-Requested-With, Content-Type, Accept'
   );
+  req.db = connectionPool; // pass the database connection pool to each request
   next();
 });
 
 // Routes
+app.get('/', (req, res) => res.sendFile('index.html'));
 app.use('/api', require('./routes/api'));
 
 // listen to something

@@ -8,23 +8,23 @@ $glow-color: #00f2fa;
 * {
   padding: 0;
   margin: 0;
-  color: white;
   font-family: 'Roboto', sans-serif;
 }
 
-.userAvatar {
+.outlined-button {
+  background: none;
+  flex-direction: row;
+  padding: 4px 16px;
+  height: 36px;
+  border: 1px solid rgba($glow-color, 0.55);
+  color: rgba($glow-color, 0.55);
+  border-radius: 4px;
+}
+
+#avatar-login {
   position: fixed;
   right: 0.5em;
   top: 0.5em;
-  height: 4em;
-  width: 4em;
-  border-radius: 50%;
-  overflow: hidden;
-
-  img {
-    width: 100%;
-    height: auto;
-  }
 
   &:hover {
     cursor: pointer;
@@ -76,5 +76,74 @@ nav {
 
   p {
     color: hsla(0, 0, 100, 0.7);
+  }
+}
+
+#login-container {
+  position: fixed;
+  top: 0;
+  right: 0;
+  left: 0;
+  bottom: 0;
+  z-index: 1;
+}
+
+#login-wrapper {
+  color: white;
+  position: absolute;
+  bottom: 8em;
+  right: 1em;
+  left: 1em;
+  padding: 20px;
+  background-color: $background-color;
+  border-radius: 15px;
+  display: flex;
+  flex-direction: column;
+
+  &::after {
+    content: '';
+    z-index: -2;
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    background-color: rgba(0, 0, 0, 0.75);
+  }
+
+  h1 {
+    color: rgba($nav-highlight, 0.9);
+    align-self: center;
+  }
+
+  label {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: small;
+    margin-top: 16px;
+    margin-bottom: 3px;
+  }
+
+  input {
+    border-radius: 5px;
+    border: none;
+    background-color: rgba(255, 255, 255, 0.7);
+    padding: 10px;
+  }
+
+  #login-buttons {
+    margin-top: 24px;
+    display: flex;
+    justify-content: space-between;
+
+    #login {
+      background: rgba($glow-color, 0.6);
+      border: none;
+      color: $background-color;
+    }
+
+    button {
+      width: 45%;
+      font-size: large;
+    }
   }
 }
