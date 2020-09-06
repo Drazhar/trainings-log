@@ -1,22 +1,25 @@
 // Imports
 const express = require('express');
-const { connectToDB } = require('./src/mysql');
-
-// connect to database
-let connectionDB = connectToDB().then(
-  (res) => {
-    console.log('connected as id ' + res.threadId);
-    return res;
-  },
-  (rej) => {
-    console.error('error connecting to mySQL server: ' + rej.stack);
-    return false;
-  }
-);
+const mysql = require('mysql');
+const private = require('./src/variables.private.js');
+const { render } = require('sass');
 
 // Basic settings
 const app = express();
-const port = 3000;
+const port = process.env.PORT || 3000;
+
+// Connect to database
+const connectionPool = (pool = mysql.createPool({
+  connectionLimit: 10,
+  user: private.user,
+  password: private.password,
+  database: private.database,
+}));
+
+app.use((req, res, next) => {
+  req.db = connectionPool;
+  next();
+});
 
 // Middleware
 app.use(express.json({ limit: '100kb' }));
@@ -29,15 +32,12 @@ app.use(function (req, res, next) {
   next();
 });
 
-// APIs
-app.get('/api/addUser', (req, res) => {
-  connectionDB.query('SELECT * FROM user', (err, results) => {
-    console.log('Error: ', err);
-    console.log('Results: ', results);
-  });
-});
+// Routes
+app.use('/api', require('./routes/api'));
 
 // listen to something
 app.listen(port, () =>
   console.log(`Example app listening at http://localhost:${port}`)
 );
+
+module.exports = { connectionPool };

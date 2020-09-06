@@ -1,3 +1,5 @@
 node_modules
 Inspiration
+
 *package-lock.json
+*.private.*
