@@ -6,7 +6,19 @@ class LoginForm extends LitElement {
   }
 
   _handleRegister(e) {
-    console.log('Register clicked');
+    const email = document.getElementById('email').value.toLowerCase();
+    const password = document.getElementById('password').value;
+    const data = {
+      email,
+      password,
+    };
+    fetch('http://localhost:3000/api/addUser', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    })
+      .then((response) => response.json())
+      .then((data) => console.log(data));
   }
 
   _closeLoginForm(e) {
