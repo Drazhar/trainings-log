@@ -2,7 +2,7 @@ import { LitElement, html } from 'lit-element';
 
 class LoginIcon extends LitElement {
   _handleLoginButton() {
-    this.dispatchEvent(new CustomEvent('open-login-form', {}));
+    document.dispatchEvent(new CustomEvent('open-login-form', {}));
   }
 
   render() {

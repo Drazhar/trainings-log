@@ -3,12 +3,10 @@ import { LitElement, html } from 'lit-element';
 class LoginForm extends LitElement {
   _handleLogin(e) {
     console.log('Login clicked');
-    console.log(e);
   }
 
   _handleRegister(e) {
     console.log('Register clicked');
-    console.log(e);
   }
 
   render() {
