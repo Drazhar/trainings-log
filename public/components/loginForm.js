@@ -9,9 +9,15 @@ class LoginForm extends LitElement {
     console.log('Register clicked');
   }
 
+  _closeLoginForm(e) {
+    if (document.getElementById('login-container') == e.target) {
+      document.dispatchEvent(new CustomEvent('close-login-form', {}));
+    }
+  }
+
   render() {
     return html`
-      <div id="login-container">
+      <div id="login-container" @click="${this._closeLoginForm}">
         <div id="login-wrapper">
           <h1>Login</h1>
           <label for="email">E-Mail:</label>
