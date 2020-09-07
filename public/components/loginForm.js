@@ -6,7 +6,7 @@ class LoginForm extends LitElement {
   }
 
   _handleRegister(e) {
-    const email = document.getElementById('email').value.toLowerCase();
+    const email = document.getElementById('email').value;
     const password = document.getElementById('password').value;
     const data = {
       email,
@@ -33,9 +33,21 @@ class LoginForm extends LitElement {
         <div id="login-wrapper">
           <h1>Login</h1>
           <label for="email">E-Mail:</label>
-          <input type="text" id="email" value="Test@email.com" isRequired />
+          <input
+            type="text"
+            id="email"
+            value="Test@email.com"
+            maxlength="50"
+            isRequired
+          />
           <label for="password">Password:</label>
-          <input type="password" id="password" value="blablabalba" isRequired />
+          <input
+            type="password"
+            id="password"
+            value="blablabalba"
+            maxlength="80"
+            isRequired
+          />
 
           <div id="login-buttons">
             <button

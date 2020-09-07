@@ -5,4 +5,13 @@ async function hashPassword(password) {
   return await bcrypt.hash(password, saltRounds);
 }
 
-module.exports = { hashPassword };
+function isValid(password) {
+  if (password.length < 6) {
+    return 'too short';
+  } else if (password.length > 72) {
+    return 'too long';
+  }
+  return true;
+}
+
+module.exports = { hashPassword, isValid };
