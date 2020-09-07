@@ -1,10 +1,7 @@
 $background-color: #00111a;
 $background-color-sec: #001724;
 
-// $nav-bg-color: #002033;
 $nav-bg-color: #18191a;
-$nav-highlight: #007ec7;
-$glow-color: #00f2fa;
 $max-white: #f0f0f0;
 
 $primary-color: #29a6c9;
@@ -35,8 +32,12 @@ $primary-color: #29a6c9;
   }
 }
 
+html,
 body {
-  height: 100vh;
+  height: 100%;
+}
+
+body {
   background-color: $background-color;
   background: radial-gradient(
     circle at top right,
@@ -55,10 +56,10 @@ main {
 
 nav {
   background-color: $nav-bg-color;
-  border-top: 1px solid rgba($nav-highlight, 0.1);
-  box-shadow: 0 0 5rem 5rem rgba($glow-color, 0.04),
-    0 0 2rem 2rem rgba($glow-color, 0.03),
-    inset 0 4rem 4rem -3rem rgba($glow-color, 0.06);
+  // border-top: 1px solid rgba($primary-color, 0.1);
+  // box-shadow: 0 0 4rem 4rem rgba($primary-color, 0.03),
+  //   0 0 2rem 2rem rgba($primary-color, 0.02),
+  //   inset 0 4rem 4rem -3rem rgba($primary-color, 0.1);
   display: flex;
   align-items: center;
   justify-content: space-around;
