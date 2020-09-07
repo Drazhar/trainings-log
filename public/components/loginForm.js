@@ -1,6 +1,6 @@
-import { LitElement, html, css } from 'lit-element';
+import { LitElement, html } from 'lit-element';
 
-class LoginView extends LitElement {
+class LoginForm extends LitElement {
   _handleLogin(e) {
     console.log('Login clicked');
     console.log(e);
@@ -43,4 +43,4 @@ class LoginView extends LitElement {
   }
 }
 
-customElements.define('login-view', LoginView);
+customElements.define('login-form', LoginForm);
