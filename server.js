@@ -2,7 +2,8 @@
 const express = require('express');
 const mysql = require('mysql');
 const private = require('./src/variables.private.js');
-const { render } = require('sass');
+const session = require('express-session');
+var MySQLStore = require('express-mysql-session')(session);
 
 // Basic settings
 const app = express();
@@ -19,14 +20,27 @@ const connectionPool = (pool = mysql.createPool({
   database: private.database,
 }));
 
+// Session Store
+const sessionStore = new MySQLStore({}, connectionPool);
+
 // Middleware
+app.use(
+  session({
+    key: 'session_cookie_name',
+    secret: 'H4Hgg0jaCTc3uLvAmkdOgBg4PM20kHHN',
+    store: sessionStore,
+    resave: true,
+    saveUninitialized: true,
+  })
+);
 app.use(express.json({ limit: '100kb' }));
 app.use((req, res, next) => {
-  res.header('Access-Control-Allow-Origin', '*');
-  res.header(
-    'Access-Control-Allow-Headers',
-    'Origin, X-Requested-With, Content-Type, Accept'
-  );
+  console.log(req.session);
+  // res.header('Access-Control-Allow-Origin', '*');
+  // res.header(
+  //   'Access-Control-Allow-Headers',
+  //   'Origin, X-Requested-With, Content-Type, Accept'
+  // );
   req.db = connectionPool; // pass the database connection pool to each request
   next();
 });
