@@ -1,46 +1,53 @@
 const express = require('express');
 const password = require('./api_helper/password');
 const { isValidEmail } = require('./api_helper/emailValidation');
-const { getTodayDate } = require('./api_helper/utilities');
 const passport = require('passport');
 const router = express.Router();
 
-router.post('/addUser', (req, res, next) => {
-  passport.authenticate('local-signup', (err, user, info) => {
-    console.log('err:', err);
-    console.log('user: ', user);
-    console.log('info: ', info);
+router.post(
+  '/addUser',
+  (req, res, next) => {
+    // Input validation
+    req.body.email = req.body.email.toLowerCase();
+    if (!isValidEmail(req.body.email)) {
+      res.status(500).send({ message: 'invalid email' });
+      return;
+    }
+    if (!password.isValid(req.body.password)) {
+      res.status(500).send({ message: 'invalid password' });
+      return;
+    }
+
+    next();
+  },
+  (req, res, next) => {
+    // Authentication
+    passport.authenticate('local-signup', (err, user, info) => {
+      if (err) next(err);
+      if (!user) {
+        res.status(500).send({ message: 'user already defined' });
+        return;
+      }
+      req.logIn(user, (err) => {
+        if (err) return next(err);
+        res.status(200).send({ message: 'user logged in', email: user.email });
+      });
+    })(req, res, next);
+  }
+);
+
+router.post('/login', (req, res, next) => {
+  passport.authenticate('local-login', (err, user, info) => {
+    if (err) next(err);
+    if (!user) {
+      res.status(500).send({ message: info.message });
+      return;
+    }
+    req.logIn(user, (err) => {
+      if (err) return next(err);
+      res.status(200).send({ message: 'user logged in', email: user.email });
+    });
   })(req, res, next);
 });
-
-// router.post('/addUser', async (req, res) => {
-//   const email = req.body.email.toLowerCase();
-
-//   if (!isValidEmail(email)) {
-//     res.status(400).send({ error: 'invalid email' });
-//     return;
-//   }
-
-//   const passCheck = password.isValid(req.body.password);
-//   if (passCheck !== true) {
-//     res.status(400).send({ error: passCheck });
-//     return;
-//   }
-
-//   const userPassword = await password.hashPassword(req.body.password);
-
-//   console.log('end');
-//   res.sendStatus(200);
-//   // req.db.query(
-//   //   `INSERT INTO user VALUES('${email}', '${userPassword}', '${getTodayDate()}')`,
-//   //   (err, result) => {
-//   //     if (err) {
-//   //       res.status(500).send(err);
-//   //     } else {
-//   //       res.status(200).send(result);
-//   //     }
-//   //   }
-//   // );
-// });
 
 module.exports = router;

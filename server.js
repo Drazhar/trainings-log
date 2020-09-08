@@ -51,11 +51,21 @@ app.use((req, res, next) => {
 app.use(passport.initialize());
 app.use(passport.session());
 
+app.use((req, res, next) => {
+  console.log('hier');
+  console.log(req.isAuthenticated());
+  next();
+});
+
 // Routes
-app.get('/', (req, res) => res.sendFile('index.html'));
+app.get('/', (req, res) => {
+  res.sendFile('index.html');
+});
 app.use('/api', require('./routes/api'));
 
 // listen to something
 app.listen(port, () =>
   console.log(`Example app listening at http://localhost:${port}`)
 );
+
+module.exports = { connectionPool };

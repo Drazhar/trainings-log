@@ -2,7 +2,19 @@ import { LitElement, html } from 'lit-element';
 
 class LoginForm extends LitElement {
   _handleLogin(e) {
-    console.log('Login clicked');
+    const email = document.getElementById('email').value;
+    const password = document.getElementById('password').value;
+    const data = {
+      email,
+      password,
+    };
+    fetch('http://localhost:3000/api/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    })
+      .then((response) => response.json())
+      .then((data) => console.log(data));
   }
 
   _handleRegister(e) {

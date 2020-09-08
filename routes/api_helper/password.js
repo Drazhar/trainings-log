@@ -7,9 +7,9 @@ async function hashPassword(password) {
 
 function isValid(password) {
   if (password.length < 6) {
-    return 'too short';
+    return false;
   } else if (password.length > 72) {
-    return 'too long';
+    return false;
   }
   return true;
 }
