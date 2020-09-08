@@ -3,7 +3,10 @@ const express = require('express');
 const mysql = require('mysql');
 const private = require('./src/variables.private.js');
 const session = require('express-session');
-var MySQLStore = require('express-mysql-session')(session);
+const MySQLStore = require('express-mysql-session')(session);
+const passport = require('passport');
+
+require('./routes/api_helper/passportConfig')(passport);
 
 // Basic settings
 const app = express();
@@ -29,21 +32,24 @@ app.use(
     key: 'session_cookie_name',
     secret: 'H4Hgg0jaCTc3uLvAmkdOgBg4PM20kHHN',
     store: sessionStore,
-    resave: true,
-    saveUninitialized: true,
+    resave: false,
+    saveUninitialized: false,
   })
 );
 app.use(express.json({ limit: '100kb' }));
 app.use((req, res, next) => {
-  console.log(req.session);
-  // res.header('Access-Control-Allow-Origin', '*');
-  // res.header(
-  //   'Access-Control-Allow-Headers',
-  //   'Origin, X-Requested-With, Content-Type, Accept'
-  // );
+  // IMPORTANT: Only needed for cross site access!
+  res.header('Access-Control-Allow-Origin', 'http://localhost:8080');
+  res.header(
+    'Access-Control-Allow-Headers',
+    'Origin, X-Requested-With, Content-Type, Accept'
+  );
+  // /\-----/\
   req.db = connectionPool; // pass the database connection pool to each request
   next();
 });
+app.use(passport.initialize());
+app.use(passport.session());
 
 // Routes
 app.get('/', (req, res) => res.sendFile('index.html'));
@@ -53,5 +59,3 @@ app.use('/api', require('./routes/api'));
 app.listen(port, () =>
   console.log(`Example app listening at http://localhost:${port}`)
 );
-
-module.exports = { connectionPool };
