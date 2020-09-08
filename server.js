@@ -1,10 +1,9 @@
 // Imports
 const express = require('express');
-const mysql = require('mysql');
-const private = require('./src/variables.private.js');
 const session = require('express-session');
 const MySQLStore = require('express-mysql-session')(session);
 const passport = require('passport');
+const connectionPool = require('./src/mySQL');
 
 require('./routes/api_helper/passportConfig')(passport);
 
@@ -14,14 +13,6 @@ const port = process.env.PORT || 3000;
 
 // Static routes
 app.use(express.static('static'));
-
-// Connect to database
-const connectionPool = (pool = mysql.createPool({
-  connectionLimit: 10,
-  user: private.user,
-  password: private.password,
-  database: private.database,
-}));
 
 // Session Store
 const sessionStore = new MySQLStore({}, connectionPool);
@@ -33,7 +24,7 @@ app.use(
     secret: 'H4Hgg0jaCTc3uLvAmkdOgBg4PM20kHHN',
     store: sessionStore,
     resave: false,
-    saveUninitialized: false,
+    saveUninitialized: false, // Save even if not registered
   })
 );
 app.use(express.json({ limit: '100kb' }));
@@ -52,8 +43,11 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 app.use((req, res, next) => {
-  console.log('hier');
-  console.log(req.isAuthenticated());
+  if (req.isAuthenticated()) {
+    console.log(`User ${req.user.email} makes this request.`);
+  } else {
+    console.log('A unknown user makes this request.');
+  }
   next();
 });
 
@@ -67,5 +61,3 @@ app.use('/api', require('./routes/api'));
 app.listen(port, () =>
   console.log(`Example app listening at http://localhost:${port}`)
 );
-
-module.exports = { connectionPool };

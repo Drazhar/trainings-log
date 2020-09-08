@@ -10,7 +10,7 @@ module.exports = (passport) => {
   });
 
   passport.deserializeUser((email, done) => {
-    require('../../server.js').connectionPool.query(
+    require('../../src/mySQL').query(
       `SELECT * FROM user WHERE email = '${email}'`,
       (err, rows) => {
         done(err, rows[0]);
