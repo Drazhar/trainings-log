@@ -1,10 +1,18 @@
 import { LitElement, html } from 'lit-element';
+import { classMap } from 'lit-html/directives/class-map.js';
 
 class LoginForm extends LitElement {
+  static get properties() {
+    return {
+      mode: { type: String },
+    };
+  }
+
   constructor() {
     super();
-
     this.mode = 'login';
+    this.loginClasses = { active: true, inactive: false };
+    this.registerClasses = { active: false, inactive: true };
   }
 
   _handleLogin(e) {
@@ -45,11 +53,36 @@ class LoginForm extends LitElement {
     }
   }
 
+  _switchToRegister(e) {
+    this.mode = 'register';
+    this.loginClasses = { active: false, inactive: true };
+    this.registerClasses = { active: true, inactive: false };
+  }
+
+  _switchToLogin(e) {
+    this.mode = 'login';
+    this.loginClasses = { active: true, inactive: false };
+    this.registerClasses = { active: false, inactive: true };
+  }
+
   render() {
     return html`
       <div id="login-container" @click="${this._closeLoginForm}">
         <div id="login-wrapper">
-          <h1>LOGIN REGISTER</h1>
+          <div id="login-headers">
+            <h1
+              class=${classMap(this.loginClasses)}
+              @click="${this._switchToLogin}"
+            >
+              LOGIN
+            </h1>
+            <h1
+              class=${classMap(this.registerClasses)}
+              @click="${this._switchToRegister}"
+            >
+              REGISTER
+            </h1>
+          </div>
           <label for="email">E-Mail:</label>
           <input
             type="text"

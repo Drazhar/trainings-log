@@ -5,6 +5,7 @@ $nav-bg-color: #18191a;
 $max-white: #f0f0f0;
 
 $primary-color: #29a6c9;
+$secondary-color: #0be3ae;
 
 * {
   padding: 0;
@@ -26,10 +27,7 @@ $primary-color: #29a6c9;
   position: fixed;
   right: 0.5em;
   top: 0.5em;
-
-  &:hover {
-    cursor: pointer;
-  }
+  cursor: pointer;
 }
 
 html,
@@ -97,7 +95,7 @@ nav {
 #login-wrapper {
   color: $max-white;
   position: absolute;
-  bottom: 8em;
+  top: 8em;
   right: 1em;
   left: 1em;
   padding: 20px;
@@ -106,10 +104,40 @@ nav {
   display: flex;
   flex-direction: column;
 
-  h1 {
-    color: rgba($primary-color, 1);
-    align-self: center;
-    font-size: large;
+  #login-headers {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-evenly;
+
+    h1 {
+      position: relative;
+      color: rgba($primary-color, 1);
+      align-self: center;
+      font-size: large;
+    }
+
+    h1::after {
+      content: '';
+      position: absolute;
+      height: 3px;
+      bottom: -3px;
+      right: 120%;
+      left: -20%;
+      border-radius: 1px;
+      background-color: rgba($secondary-color, 0.7);
+      transition: all 0.3s ease-in-out;
+    }
+
+    .active::after {
+      content: '';
+      right: -20%;
+      left: -20%;
+    }
+
+    .inactive {
+      cursor: pointer;
+      color: rgba(#f0f0f0, 0.5);
+    }
   }
 
   label {
