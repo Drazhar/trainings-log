@@ -28,7 +28,12 @@ class LoginForm extends LitElement {
       body: JSON.stringify(data),
     })
       .then((response) => response.json())
-      .then((data) => console.log(data));
+      .then((data) => {
+        console.log(data);
+        if (data.success === true) {
+          document.dispatchEvent(new CustomEvent('close-login-form', {}));
+        }
+      });
   }
 
   _handleRegister(e) {
@@ -44,7 +49,12 @@ class LoginForm extends LitElement {
       body: JSON.stringify(data),
     })
       .then((response) => response.json())
-      .then((data) => console.log(data));
+      .then((data) => {
+        console.log(data);
+        if (data.success === true) {
+          document.dispatchEvent(new CustomEvent('close-login-form', {}));
+        }
+      });
   }
 
   _closeLoginForm(e) {
