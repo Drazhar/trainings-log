@@ -32,13 +32,11 @@ router.post(
       }
       req.logIn(user, (err) => {
         if (err) return next(err);
-        res
-          .status(200)
-          .send({
-            success: true,
-            message: 'user logged in',
-            email: user.email,
-          });
+        res.status(200).send({
+          success: true,
+          message: 'user logged in',
+          email: user.email,
+        });
       });
     })(req, res, next);
   }
@@ -56,6 +54,20 @@ router.post('/login', (req, res, next) => {
       res
         .status(200)
         .send({ success: true, message: 'user logged in', email: user.email });
+    });
+  })(req, res, next);
+});
+
+router.get('/userStatus', (req, res, next) => {
+  passport.authenticate('local-login', (err, user, info) => {
+    if (err) next(err);
+    if (!user) {
+      res.status(200).send(false);
+      return;
+    }
+    req.logIn(user, (err) => {
+      if (err) return next(err);
+      res.status(200).send(true);
     });
   })(req, res, next);
 });

@@ -1,10 +1,28 @@
 import { LitElement, html } from 'lit-element';
 import { displayLoginForm } from '../src/eventListener/loginForm';
+import { getUserAuth } from '../src/getUserAuth';
+import { connect } from 'pwa-helpers';
+import { store } from '../src/redux/store';
+import { updateUserAuthenticated } from '../src/redux/actions';
 
-class LoginIcon extends LitElement {
+class LoginIcon extends connect(store)(LitElement) {
+  static get properties() {
+    return {
+      isUserAuthenticated: { type: Boolean },
+    };
+  }
+
+  stateChanged(state) {
+    this.isUserAuthenticated = state.isUserAuthenticated;
+  }
+
   connectedCallback() {
     super.connectedCallback();
     document.addEventListener('open-login-form', displayLoginForm);
+
+    getUserAuth().then((result) =>
+      store.dispatch(updateUserAuthenticated(result))
+    );
   }
 
   _handleLoginButton() {

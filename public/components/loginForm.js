@@ -1,7 +1,10 @@
 import { LitElement, html } from 'lit-element';
 import { classMap } from 'lit-html/directives/class-map.js';
+import { connect } from 'pwa-helpers';
+import { store } from '../src/redux/store';
+import { updateUserAuthenticated } from '../src/redux/actions';
 
-class LoginForm extends LitElement {
+class LoginForm extends connect(store)(LitElement) {
   static get properties() {
     return {
       mode: { type: String },
@@ -31,6 +34,7 @@ class LoginForm extends LitElement {
       .then((data) => {
         console.log(data);
         if (data.success === true) {
+          store.dispatch(updateUserAuthenticated(true));
           document.dispatchEvent(new CustomEvent('close-login-form', {}));
         }
       });
@@ -52,6 +56,7 @@ class LoginForm extends LitElement {
       .then((data) => {
         console.log(data);
         if (data.success === true) {
+          store.dispatch(updateUserAuthenticated(true));
           document.dispatchEvent(new CustomEvent('close-login-form', {}));
         }
       });
