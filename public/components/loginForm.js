@@ -34,7 +34,9 @@ class LoginForm extends connect(store)(LitElement) {
       .then((data) => {
         console.log(data);
         if (data.success === true) {
-          store.dispatch(updateUserAuthenticated(true));
+          store.dispatch(
+            updateUserAuthenticated({ isUserAuth: true, email: email })
+          );
           document.dispatchEvent(new CustomEvent('close-login-form', {}));
         }
       });
@@ -56,7 +58,9 @@ class LoginForm extends connect(store)(LitElement) {
       .then((data) => {
         console.log(data);
         if (data.success === true) {
-          store.dispatch(updateUserAuthenticated(true));
+          store.dispatch(
+            updateUserAuthenticated({ isUserAuth: true, email: email })
+          );
           document.dispatchEvent(new CustomEvent('close-login-form', {}));
         }
       });

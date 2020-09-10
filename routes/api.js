@@ -62,12 +62,12 @@ router.get('/userStatus', (req, res, next) => {
   passport.authenticate('local-login', (err, user, info) => {
     if (err) next(err);
     if (!user) {
-      res.status(200).send(false);
+      res.status(200).send({ isUserAuth: false, email: '' });
       return;
     }
     req.logIn(user, (err) => {
       if (err) return next(err);
-      res.status(200).send(true);
+      res.status(200).send({ isUserAuth: true, email: user.email });
     });
   })(req, res, next);
 });

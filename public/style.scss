@@ -30,6 +30,20 @@ $secondary-color: #0be3ae;
   cursor: pointer;
 }
 
+.avatar-icon {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 50%;
+  width: 55px;
+  overflow: hidden;
+
+  img {
+    width: 100%;
+    height: 100%;
+  }
+}
+
 html,
 body {
   height: 100%;

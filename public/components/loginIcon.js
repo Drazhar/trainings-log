@@ -8,17 +8,30 @@ import { updateUserAuthenticated } from '../src/redux/actions';
 class LoginIcon extends connect(store)(LitElement) {
   static get properties() {
     return {
-      isUserAuthenticated: { type: Boolean },
+      isUserAuthenticated: {
+        type: Boolean,
+        hasChanged(newVal, oldVal) {
+          if (newVal === true) {
+            document.removeEventListener('open-login-form', displayLoginForm);
+          } else {
+            document.addEventListener('open-login-form', displayLoginForm);
+          }
+          if (newVal !== oldVal) {
+            return true;
+          }
+        },
+      },
+      userEmail: { type: String },
     };
   }
 
   stateChanged(state) {
     this.isUserAuthenticated = state.isUserAuthenticated;
+    this.userEmail = state.userEmail;
   }
 
   connectedCallback() {
     super.connectedCallback();
-    document.addEventListener('open-login-form', displayLoginForm);
 
     getUserAuth().then((result) =>
       store.dispatch(updateUserAuthenticated(result))
@@ -31,9 +44,19 @@ class LoginIcon extends connect(store)(LitElement) {
 
   render() {
     return html`
-      <button class="outlined-button" @click="${this._handleLoginButton}">
-        <span>Login</span>
-      </button>
+      ${!this.isUserAuthenticated
+        ? html`<button
+            class="outlined-button"
+            @click="${this._handleLoginButton}"
+          >
+            <span>Login</span>
+          </button>`
+        : html`<div class="avatar-icon">
+            <img
+              src="https://api.adorable.io/avatars/55/${this.userEmail}.png"
+              alt="user icon"
+            />
+          </div>`}
     `;
   }
 
