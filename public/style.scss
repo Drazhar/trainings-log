@@ -109,6 +109,7 @@ nav {
   h1 {
     color: rgba($primary-color, 1);
     align-self: center;
+    font-size: large;
   }
 
   label {
@@ -128,7 +129,7 @@ nav {
   #login-buttons {
     margin-top: 24px;
     display: flex;
-    justify-content: space-between;
+    justify-content: center;
 
     #login {
       background: rgba($primary-color, 1);

@@ -1,6 +1,12 @@
 import { LitElement, html } from 'lit-element';
 
 class LoginForm extends LitElement {
+  constructor() {
+    super();
+
+    this.mode = 'login';
+  }
+
   _handleLogin(e) {
     const email = document.getElementById('email').value;
     const password = document.getElementById('password').value;
@@ -43,35 +49,51 @@ class LoginForm extends LitElement {
     return html`
       <div id="login-container" @click="${this._closeLoginForm}">
         <div id="login-wrapper">
-          <h1>Login</h1>
+          <h1>LOGIN REGISTER</h1>
           <label for="email">E-Mail:</label>
           <input
             type="text"
             id="email"
-            value="Test@email.com"
             maxlength="50"
+            placeholder="Email address"
             isRequired
           />
           <label for="password">Password:</label>
           <input
             type="password"
             id="password"
-            value="blablabalba"
             maxlength="80"
+            placeholder="Password"
             isRequired
           />
 
+          ${this.mode === 'login'
+            ? ''
+            : html` <input
+                style="margin-top: 6px"
+                type="password"
+                id="password2"
+                maxlength="80"
+                placeholder="Repeat password"
+                isRequired
+              />`}
+
           <div id="login-buttons">
-            <button
-              @click="${this._handleLogin}"
-              class="outlined-button"
-              id="login"
-            >
-              Login
-            </button>
-            <button @click="${this._handleRegister}" class="outlined-button">
-              Register
-            </button>
+            ${this.mode === 'login'
+              ? html`<button
+                  @click="${this._handleLogin}"
+                  class="outlined-button"
+                  id="login"
+                >
+                  Login
+                </button>`
+              : html` <button
+                  @click="${this._handleRegister}"
+                  class="outlined-button"
+                  id="login"
+                >
+                  Register
+                </button>`}
           </div>
         </div>
       </div>
