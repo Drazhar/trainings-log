@@ -2,7 +2,7 @@ import { UPDATE_USER_AUTHENTICATED } from './actions';
 
 const INITIAL_STATE = {
   isUserAuthenticated: false,
-  userEmail: '',
+  userID: '',
 };
 
 export function reducer(state = INITIAL_STATE, action) {
@@ -10,7 +10,7 @@ export function reducer(state = INITIAL_STATE, action) {
     case UPDATE_USER_AUTHENTICATED:
       return Object.assign({}, state, {
         isUserAuthenticated: action.isUserAuthenticated.isUserAuth,
-        userEmail: action.isUserAuthenticated.email,
+        userID: action.isUserAuthenticated.userID,
       });
     default:
       return state;

@@ -27,15 +27,17 @@ class LoginForm extends connect(store)(LitElement) {
     };
     fetch('http://localhost:3000/api/login', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json',
+      },
       body: JSON.stringify(data),
     })
       .then((response) => response.json())
       .then((data) => {
-        console.log(data);
         if (data.success === true) {
           store.dispatch(
-            updateUserAuthenticated({ isUserAuth: true, email: email })
+            updateUserAuthenticated({ isUserAuth: true, userID: data.userID })
           );
           document.dispatchEvent(new CustomEvent('close-login-form', {}));
         }
@@ -51,15 +53,17 @@ class LoginForm extends connect(store)(LitElement) {
     };
     fetch('http://localhost:3000/api/addUser', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json',
+      },
       body: JSON.stringify(data),
     })
       .then((response) => response.json())
       .then((data) => {
-        console.log(data);
         if (data.success === true) {
           store.dispatch(
-            updateUserAuthenticated({ isUserAuth: true, email: email })
+            updateUserAuthenticated({ isUserAuth: true, userID: data.userID })
           );
           document.dispatchEvent(new CustomEvent('close-login-form', {}));
         }

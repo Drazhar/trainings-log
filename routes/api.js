@@ -35,7 +35,7 @@ router.post(
         res.status(200).send({
           success: true,
           message: 'user logged in',
-          email: user.email,
+          userID: user.userID,
         });
       });
     })(req, res, next);
@@ -51,25 +51,21 @@ router.post('/login', (req, res, next) => {
     }
     req.logIn(user, (err) => {
       if (err) return next(err);
-      res
-        .status(200)
-        .send({ success: true, message: 'user logged in', email: user.email });
+      res.status(200).send({
+        success: true,
+        message: 'user logged in',
+        userID: user.userID,
+      });
     });
   })(req, res, next);
 });
 
 router.get('/userStatus', (req, res, next) => {
-  passport.authenticate('local-login', (err, user, info) => {
-    if (err) next(err);
-    if (!user) {
-      res.status(200).send({ isUserAuth: false, email: '' });
-      return;
-    }
-    req.logIn(user, (err) => {
-      if (err) return next(err);
-      res.status(200).send({ isUserAuth: true, email: user.email });
-    });
-  })(req, res, next);
+  if (req.isAuthenticated()) {
+    res.status(200).send({ isUserAuth: true, userID: req.user.id });
+  } else {
+    res.status(200).send({ isUserAuth: false, userID: '' });
+  }
 });
 
 module.exports = router;

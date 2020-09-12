@@ -8,6 +8,7 @@ $primary-color: #29a6c9;
 $secondary-color: #0be3ae;
 
 * {
+  color: $max-white;
   padding: 0;
   margin: 0;
   font-family: 'Roboto', sans-serif;
@@ -24,10 +25,11 @@ $secondary-color: #0be3ae;
 }
 
 #avatar {
-  position: fixed;
-  right: 0.5em;
-  top: 0.5em;
+  justify-self: end;
+  margin-top: 0.5em;
+  margin-right: 0.5em;
   cursor: pointer;
+  z-index: 3;
 }
 
 .avatar-icon {
@@ -35,7 +37,7 @@ $secondary-color: #0be3ae;
   justify-content: center;
   align-items: center;
   border-radius: 50%;
-  width: 55px;
+  width: 2.5em;
   overflow: hidden;
 
   img {
@@ -78,8 +80,9 @@ nav {
 }
 
 .nav-button {
+  text-decoration: none;
   font-size: 0.75em;
-  opacity: 0.8;
+  opacity: 0.6;
   background-color: none;
   display: flex;
   align-items: center;
@@ -92,8 +95,12 @@ nav {
   }
 
   p {
-    color: hsla(0, 0, 100, 0.7);
+    color: $max-white;
   }
+}
+
+.nav-active {
+  opacity: 1;
 }
 
 #login-container {
@@ -183,5 +190,23 @@ nav {
       width: 45%;
       font-size: large;
     }
+  }
+}
+
+.view-wrapper {
+  display: grid;
+  grid-template-rows: 3.5rem auto;
+  align-items: stretch;
+
+  .view-header {
+    display: grid;
+    grid-template-columns: auto 4.5em;
+    background-color: red;
+    border-bottom: dashed rgba($max-white, 0.5);
+  }
+
+  .view-main {
+    background-color: green;
+    overflow-y: scroll;
   }
 }

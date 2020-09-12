@@ -21,13 +21,13 @@ class LoginIcon extends connect(store)(LitElement) {
           }
         },
       },
-      userEmail: { type: String },
+      userID: { type: String },
     };
   }
 
   stateChanged(state) {
     this.isUserAuthenticated = state.isUserAuthenticated;
-    this.userEmail = state.userEmail;
+    this.userID = state.userID;
   }
 
   connectedCallback() {
@@ -53,7 +53,7 @@ class LoginIcon extends connect(store)(LitElement) {
           </button>`
         : html`<div class="avatar-icon">
             <img
-              src="https://api.adorable.io/avatars/55/${this.userEmail}.png"
+              src="https://api.adorable.io/avatars/40/${this.userID}.png"
               alt="user icon"
             />
           </div>`}
