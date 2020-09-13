@@ -84,7 +84,7 @@ router.post('/addWeight', (req, res) => {
 
 router.get('/getWeight', (req, res) => {
   req.db.query(
-    `SELECT date, weight FROM weight WHERE date >= '2020-09-11' AND date <= '2020-09-13' AND user_id = '${req.user.id}';`,
+    `SELECT date, weight FROM weight WHERE date >= '2000-09-11' AND date <= '2025-09-13' AND user_id = '${req.user.id}';`,
     (err, result) => {
       res.status(200).send(result);
     }

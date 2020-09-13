@@ -11,7 +11,6 @@ export function updateUserAuthenticated(isUserAuthenticated) {
 }
 
 export function getWeightData(fromDate, toDate) {
-  // GET weight from Database
   fetch('http://localhost:3000/api/getWeight', {
     method: 'GET',
     credentials: 'include',
