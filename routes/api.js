@@ -60,12 +60,35 @@ router.post('/login', (req, res, next) => {
   })(req, res, next);
 });
 
-router.get('/userStatus', (req, res, next) => {
+router.get('/userStatus', (req, res) => {
   if (req.isAuthenticated()) {
     res.status(200).send({ isUserAuth: true, userID: req.user.id });
   } else {
     res.status(200).send({ isUserAuth: false, userID: '' });
   }
+});
+
+router.post('/addWeight', (req, res) => {
+  const userID = req.user.id;
+  const weight = req.body.weight;
+  const date = req.body.date;
+
+  req.db.query(
+    `INSERT INTO weight (user_id, date, weight) VALUES('${userID}', '${date}', ${weight}) ON DUPLICATE KEY UPDATE weight=VALUES(weight);`,
+    (error) => {
+      if (error) throw error;
+      res.sendStatus(200);
+    }
+  );
+});
+
+router.get('/getWeight', (req, res) => {
+  req.db.query(
+    `SELECT date, weight FROM weight WHERE date >= '2020-09-11' AND date <= '2020-09-13' AND user_id = '${req.user.id}';`,
+    (err, result) => {
+      res.status(200).send(result);
+    }
+  );
 });
 
 module.exports = router;

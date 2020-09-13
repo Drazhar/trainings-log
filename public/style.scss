@@ -8,7 +8,6 @@ $primary-color: #29a6c9;
 $secondary-color: #0be3ae;
 
 * {
-  color: $max-white;
   padding: 0;
   margin: 0;
   font-family: 'Roboto', sans-serif;
@@ -201,12 +200,13 @@ nav {
   .view-header {
     display: grid;
     grid-template-columns: auto 4.5em;
-    background-color: red;
-    border-bottom: dashed rgba($max-white, 0.5);
   }
 
   .view-main {
-    background-color: green;
     overflow-y: scroll;
   }
+}
+
+.input-weight {
+  color: $max-white;
 }

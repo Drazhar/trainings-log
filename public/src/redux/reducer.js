@@ -1,8 +1,9 @@
-import { UPDATE_USER_AUTHENTICATED } from './actions';
+import { UPDATE_USER_AUTHENTICATED, GET_WEIGHT_DATA } from './actions';
 
 const INITIAL_STATE = {
   isUserAuthenticated: false,
   userID: '',
+  weightData: [],
 };
 
 export function reducer(state = INITIAL_STATE, action) {
@@ -11,6 +12,10 @@ export function reducer(state = INITIAL_STATE, action) {
       return Object.assign({}, state, {
         isUserAuthenticated: action.isUserAuthenticated.isUserAuth,
         userID: action.isUserAuthenticated.userID,
+      });
+    case GET_WEIGHT_DATA:
+      return Object.assign({}, state, {
+        weightData: action.weightData,
       });
     default:
       return state;
