@@ -14,14 +14,22 @@ class WeightView extends connect(store)(LitElement) {
 
   connectedCallback() {
     super.connectedCallback();
-    // window.addEventListener('resize', this.createChart);
-    getWeightData();
+    this._updateWeight();
   }
 
-  // disconnectedCallback() {
-  //   window.removeEventListener('resize', this.createChart);
-  //   super.disconnectedCallback();
-  // }
+  _updateWeight() {
+    let range = document.getElementById('weightRange');
+
+    if (range === null) {
+      range = 1;
+    } else {
+      range = parseInt(range.value);
+    }
+
+    console.log(range);
+
+    getWeightData();
+  }
 
   _handleSubmit(e) {
     e.preventDefault();
@@ -40,18 +48,31 @@ class WeightView extends connect(store)(LitElement) {
     });
 
     /* ADD DATA TO STATE! */
+    this._updateWeight();
   }
 
   stateChanged(state) {
-    this.weightData = state.weightData;
+    if (this.weightData !== state.weightData) {
+      this.weightData = state.weightData;
+    }
   }
 
   render() {
     return html`
       <div class="view-wrapper">
         <div class="view-header">
-          <div></div>
-          <login-icon id="avatar"></login-icon>
+          <label for="weightRange" style="color:white">Range: </label>
+          <select
+            name="weightRange"
+            id="weightRange"
+            @change="${this._updateWeight}"
+          >
+            <option value="1">1 Month</option>
+            <option value="3">3 Month</option>
+            <option value="6">6 Month</option>
+            <option value="12">1 Year</option>
+            <option value="0">all</option>
+          </select>
         </div>
         <div class="view-main">
           <div id="weight-chart"></div>
@@ -65,6 +86,10 @@ class WeightView extends connect(store)(LitElement) {
         </div>
       </div>
     `;
+  }
+
+  updated() {
+    this.createChart();
   }
 
   createChart() {
@@ -84,53 +109,58 @@ class WeightView extends connect(store)(LitElement) {
       .append('g')
       .attr('transform', `translate(${margin.left},${margin.top})`);
 
-    // Scales
+    // X SCALE AND AXIS
     const x = d3
       .scaleTime()
       .range([0, width])
       .domain([
         d3.min(this.weightData, (d) => d.date),
         d3.max(this.weightData, (d) => d.date),
-      ]);
+      ])
+      .nice();
     svg
       .append('g')
       .attr('transform', `translate(0,${height})`)
-      .call(d3.axisBottom(x))
+      .call(d3.axisBottom(x).ticks(5).tickSize(-height))
       .attr('color', 'lightgrey');
 
+    // Y SCALE AND AXIS
     const y = d3
       .scaleLinear()
       .range([height, 0])
-      .domain([0, d3.max(this.weightData, (d) => d.weight)]);
-    svg.append('g').call(d3.axisLeft(y).ticks(5)).attr('color', 'lightgrey');
+      .domain([
+        d3.min(this.weightData, (d) => d.weight) - 5,
+        d3.max(this.weightData, (d) => d.weight) + 5,
+      ])
+      .nice();
+    svg
+      .append('g')
+      .call(d3.axisLeft(y).ticks(4).tickSize(-width))
+      .attr('color', 'lightgrey');
 
+    // CREATE LINE
     const line = d3
       .line()
       .x((d) => x(d.date))
       .y((d) => y(d.weight));
-
     svg
       .append('path')
       .attr('d', line(this.weightData))
-      .attr('stroke', 'darkgrey')
+      .attr('stroke', 'rgba(255,255,255,0.4)')
       .attr('fill', 'none');
 
-    // Dots there are
+    // CREATE DOTS
     svg
       .selectAll('dot')
       .data(this.weightData)
       .enter()
       .append('circle')
-      .attr('r', 5)
+      .attr('r', 2)
       .attr('cx', (d) => x(d.date))
       .attr('cy', (d) => y(d.weight))
-      .attr('fill', `lightgrey`)
+      .attr('fill', `RGBA(240,240,240,0.5)`)
       .append('svg:title')
       .text((d, i) => `blabla`);
-  }
-
-  updated() {
-    this.createChart();
   }
 
   createRenderRoot() {

@@ -24,9 +24,9 @@ $secondary-color: #0be3ae;
 }
 
 #avatar {
-  justify-self: end;
-  margin-top: 0.5em;
-  margin-right: 0.5em;
+  position: absolute;
+  right: 0.5em;
+  top: 0.5em;
   cursor: pointer;
   z-index: 3;
 }
@@ -198,8 +198,10 @@ nav {
   align-items: stretch;
 
   .view-header {
-    display: grid;
-    grid-template-columns: auto 4.5em;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
   }
 
   .view-main {
@@ -212,5 +214,9 @@ nav {
 }
 
 #weight-chart {
-  background-color: none;
+  background-color: rgba($max-white, 0.15);
+
+  .tick line {
+    stroke: rgba($max-white, 0.2);
+  }
 }
