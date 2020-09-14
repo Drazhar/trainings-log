@@ -1,5 +1,9 @@
-function getTodayDate() {
+function getTodayDate(diffMonth) {
   const today = new Date();
+
+  if (diffMonth) {
+    today.setMonth(today.getMonth() - diffMonth);
+  }
 
   let month = today.getMonth() + 1;
   let day = today.getDate();

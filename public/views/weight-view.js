@@ -4,11 +4,14 @@ import { store } from '../src/redux/store';
 import { getTodayDate } from '../../routes/api_helper/utilities';
 import { getWeightData } from '../src/redux/actions';
 import * as d3 from 'd3';
+import { curveBasis } from 'd3';
+import { getMovingAverage } from '../src/movingAverage';
 
 class WeightView extends connect(store)(LitElement) {
   static get properties() {
     return {
       weightData: { type: Array },
+      movingAverage: { type: Array },
     };
   }
 
@@ -26,9 +29,11 @@ class WeightView extends connect(store)(LitElement) {
       range = parseInt(range.value);
     }
 
-    console.log(range);
-
-    getWeightData();
+    if (range === 0) {
+      getWeightData();
+    } else {
+      getWeightData(getTodayDate(range), getTodayDate());
+    }
   }
 
   _handleSubmit(e) {
@@ -54,6 +59,7 @@ class WeightView extends connect(store)(LitElement) {
   stateChanged(state) {
     if (this.weightData !== state.weightData) {
       this.weightData = state.weightData;
+      this.movingAverage = getMovingAverage(this.weightData, 5);
     }
   }
 
@@ -61,7 +67,7 @@ class WeightView extends connect(store)(LitElement) {
     return html`
       <div class="view-wrapper">
         <div class="view-header">
-          <label for="weightRange" style="color:white">Range: </label>
+          <label for="weightRange" style="color:white">Max range: </label>
           <select
             name="weightRange"
             id="weightRange"
@@ -83,6 +89,23 @@ class WeightView extends connect(store)(LitElement) {
             <input type="number" id="weight" isRequired />
             <input type="submit" @click="${this._handleSubmit}" />
           </form>
+          <table
+            id="weightRawData"
+            style="color:white; width:99%; margin-top: 1em"
+          >
+            ${[...this.weightData].reverse().map((entry) => {
+              return html`<tr>
+                <td>
+                  ${entry.date.getDate() < 10
+                    ? '0' + entry.date.getDate()
+                    : entry.date.getDate()}.${entry.date.getMonth() + 1 < 10
+                    ? '0' + (entry.date.getMonth() + 1)
+                    : entry.date.getMonth() + 1}.${entry.date.getFullYear()}
+                </td>
+                <td>${entry.weight}</td>
+              </tr>`;
+            })}
+          </table>
         </div>
       </div>
     `;
@@ -96,7 +119,7 @@ class WeightView extends connect(store)(LitElement) {
     const chartArea = document.getElementById('weight-chart');
     chartArea.innerHTML = ''; // delete old chart
 
-    const margin = { top: 20, right: 30, bottom: 30, left: 40 };
+    const margin = { top: 15, right: 30, bottom: 20, left: 30 };
     const width = chartArea.clientWidth - margin.left - margin.right;
     const height = 300 - margin.top - margin.bottom;
 
@@ -116,8 +139,7 @@ class WeightView extends connect(store)(LitElement) {
       .domain([
         d3.min(this.weightData, (d) => d.date),
         d3.max(this.weightData, (d) => d.date),
-      ])
-      .nice();
+      ]);
     svg
       .append('g')
       .attr('transform', `translate(0,${height})`)
@@ -139,15 +161,19 @@ class WeightView extends connect(store)(LitElement) {
       .attr('color', 'lightgrey');
 
     // CREATE LINE
-    const line = d3
+    const lineSmooth = d3
       .line()
       .x((d) => x(d.date))
-      .y((d) => y(d.weight));
+      .y((d) => y(d.weight))
+      .curve(curveBasis);
+
     svg
       .append('path')
-      .attr('d', line(this.weightData))
-      .attr('stroke', 'rgba(255,255,255,0.4)')
-      .attr('fill', 'none');
+      .attr('d', lineSmooth(this.movingAverage))
+      .attr('stroke', '#29a6c9')
+      .attr('stroke-width', 3)
+      .attr('fill', 'none')
+      .attr('stroke-linejoin', 'round');
 
     // CREATE DOTS
     svg
@@ -158,7 +184,7 @@ class WeightView extends connect(store)(LitElement) {
       .attr('r', 2)
       .attr('cx', (d) => x(d.date))
       .attr('cy', (d) => y(d.weight))
-      .attr('fill', `RGBA(240,240,240,0.5)`)
+      .attr('fill', `RGBA(240,240,240,0.3)`)
       .append('svg:title')
       .text((d, i) => `blabla`);
   }

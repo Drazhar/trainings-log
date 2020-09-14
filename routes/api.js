@@ -83,8 +83,17 @@ router.post('/addWeight', (req, res) => {
 });
 
 router.get('/getWeight', (req, res) => {
+  let fromDateString = '';
+  let toDateString = '';
+
+  if ('fromDate' in req.query) {
+    fromDateString = ` date >= '${req.query.fromDate}' AND`;
+  }
+  if ('toDate' in req.query) {
+    toDateString = ` date <= '${req.query.toDate}' AND`;
+  }
   req.db.query(
-    `SELECT date, weight FROM weight WHERE date >= '2000-09-11' AND date <= '2025-09-13' AND user_id = '${req.user.id}';`,
+    `SELECT date, weight FROM weight WHERE${fromDateString}${toDateString} user_id = '${req.user.id}';`,
     (err, result) => {
       res.status(200).send(result);
     }

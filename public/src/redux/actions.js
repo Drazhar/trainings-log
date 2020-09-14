@@ -11,7 +11,23 @@ export function updateUserAuthenticated(isUserAuthenticated) {
 }
 
 export function getWeightData(fromDate, toDate) {
-  fetch('http://localhost:3000/api/getWeight', {
+  let fetchURL = 'http://localhost:3000/api/getWeight';
+  if (fromDate || toDate) {
+    fetchURL += '?';
+  }
+  if (fromDate) {
+    fetchURL += `fromDate=${fromDate}`;
+    if (toDate) {
+      fetchURL += '&';
+    }
+  }
+  if (toDate) {
+    fetchURL += `toDate=${toDate}`;
+  }
+
+  console.log(fetchURL);
+
+  fetch(fetchURL, {
     method: 'GET',
     credentials: 'include',
     headers: {
