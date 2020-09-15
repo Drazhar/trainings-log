@@ -1,5 +1,5 @@
 import { LitElement, html } from 'lit-element';
-import { displayLoginForm } from '../src/eventListener/loginForm';
+import { displayForm } from '../src/eventListener/openCloseForms';
 import { getUserAuth } from '../src/getUserAuth';
 import { connect } from 'pwa-helpers';
 import { store } from '../src/redux/store';
@@ -12,9 +12,9 @@ class LoginIcon extends connect(store)(LitElement) {
         type: Boolean,
         hasChanged(newVal, oldVal) {
           if (newVal === true) {
-            document.removeEventListener('open-login-form', displayLoginForm);
+            document.removeEventListener('open-login-form', displayForm);
           } else {
-            document.addEventListener('open-login-form', displayLoginForm);
+            document.addEventListener('open-login-form', displayForm);
           }
           if (newVal !== oldVal) {
             return true;

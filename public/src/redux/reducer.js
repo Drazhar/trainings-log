@@ -4,6 +4,7 @@ const INITIAL_STATE = {
   isUserAuthenticated: false,
   userID: '',
   weightData: [],
+  exercises: [],
 };
 
 export function reducer(state = INITIAL_STATE, action) {

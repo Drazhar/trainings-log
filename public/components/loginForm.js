@@ -74,7 +74,7 @@ class LoginForm extends connect(store)(LitElement) {
   }
 
   _closeLoginForm(e) {
-    if (document.getElementById('login-container') == e.target) {
+    if (document.getElementById('form-container') == e.target) {
       document.dispatchEvent(new CustomEvent('close-login-form', {}));
     }
   }
@@ -93,7 +93,7 @@ class LoginForm extends connect(store)(LitElement) {
 
   render() {
     return html`
-      <div id="login-container" @click="${this._closeLoginForm}">
+      <div id="form-container" @click="${this._closeLoginForm}">
         <form id="login-wrapper">
           <div id="login-headers">
             <h1
@@ -155,7 +155,10 @@ class LoginForm extends connect(store)(LitElement) {
                   id="login"
                 />`}
             <button
-              @click="${this._closeLoginForm}"
+              @click="${() =>
+                document.dispatchEvent(
+                  new CustomEvent('close-login-form', {})
+                )}"
               class="outlined-button"
               id="cancel"
             >

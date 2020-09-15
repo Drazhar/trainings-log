@@ -7,6 +7,8 @@ $max-white: #f0f0f0;
 $primary-color: #29a6c9;
 $secondary-color: #0be3ae;
 
+@use 'styles/exerciseForm';
+
 * {
   padding: 0;
   margin: 0;
@@ -28,7 +30,6 @@ $secondary-color: #0be3ae;
   right: 0.5em;
   top: 0.5em;
   cursor: pointer;
-  z-index: 3;
 }
 
 .avatar-icon {
@@ -102,7 +103,7 @@ nav {
   opacity: 1;
 }
 
-#login-container {
+#form-container {
   position: fixed;
   top: 0;
   right: 0;
@@ -225,4 +226,10 @@ nav {
   .tick line {
     stroke: rgba($max-white, 0.2);
   }
+}
+
+#add_exercise {
+  position: absolute;
+  bottom: 6em;
+  right: 2em;
 }

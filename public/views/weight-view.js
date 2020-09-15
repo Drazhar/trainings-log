@@ -3,8 +3,17 @@ import { connect } from 'pwa-helpers';
 import { store } from '../src/redux/store';
 import { getTodayDate, getSqlDate } from '../../routes/api_helper/utilities';
 import { getWeightData } from '../src/redux/actions';
-import * as d3 from 'd3';
-import { curveBasis } from 'd3';
+import {
+  select,
+  curveBasis,
+  scaleTime,
+  scaleLinear,
+  line,
+  axisLeft,
+  min,
+  max,
+  axisBottom,
+} from 'd3';
 import { getMovingAverage } from '../src/movingAverage';
 import { backendAddress } from '../src/env';
 
@@ -145,8 +154,7 @@ class WeightView extends connect(store)(LitElement) {
     const height = 300 - margin.top - margin.bottom;
 
     // Create the chart itself
-    const svg = d3
-      .select(chartArea)
+    const svg = select(chartArea)
       .append('svg')
       .attr('width', width + margin.left + margin.right)
       .attr('height', height + margin.top + margin.bottom)
@@ -154,36 +162,33 @@ class WeightView extends connect(store)(LitElement) {
       .attr('transform', `translate(${margin.left},${margin.top})`);
 
     // X SCALE AND AXIS
-    const x = d3
-      .scaleTime()
+    const x = scaleTime()
       .range([0, width])
       .domain([
-        d3.min(this.weightData, (d) => d.date),
-        d3.max(this.weightData, (d) => d.date),
+        min(this.weightData, (d) => d.date),
+        max(this.weightData, (d) => d.date),
       ]);
     svg
       .append('g')
       .attr('transform', `translate(0,${height})`)
-      .call(d3.axisBottom(x).ticks(5).tickSize(-height))
+      .call(axisBottom(x).ticks(5).tickSize(-height))
       .attr('color', 'lightgrey');
 
     // Y SCALE AND AXIS
-    const y = d3
-      .scaleLinear()
+    const y = scaleLinear()
       .range([height, 0])
       .domain([
-        d3.min(this.weightData, (d) => d.weight) - 5,
-        d3.max(this.weightData, (d) => d.weight) + 5,
+        min(this.weightData, (d) => d.weight) - 5,
+        max(this.weightData, (d) => d.weight) + 5,
       ])
       .nice();
     svg
       .append('g')
-      .call(d3.axisLeft(y).ticks(4).tickSize(-width))
+      .call(axisLeft(y).ticks(4).tickSize(-width))
       .attr('color', 'lightgrey');
 
     // CREATE LINE
-    const lineSmooth = d3
-      .line()
+    const lineSmooth = line()
       .x((d) => x(d.date))
       .y((d) => y(d.weight))
       .curve(curveBasis);

@@ -2,7 +2,10 @@ import { store } from './store';
 import { backendAddress } from '../env';
 
 export const UPDATE_USER_AUTHENTICATED = 'UPDATE_USER_AUTHENTICATED';
+
 export const GET_WEIGHT_DATA = 'GET_WEIGHT_DATA';
+
+export const ADD_EXERCISE = 'ADD_EXERCISE';
 
 export function updateUserAuthenticated(isUserAuthenticated) {
   return {
