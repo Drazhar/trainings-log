@@ -1,7 +1,7 @@
 import { LitElement, html } from 'lit-element';
 import { connect } from 'pwa-helpers';
 import { store } from '../src/redux/store';
-import { getTodayDate } from '../../routes/api_helper/utilities';
+import { getTodayDate, getSqlDate } from '../../routes/api_helper/utilities';
 import { getWeightData } from '../src/redux/actions';
 import * as d3 from 'd3';
 import { curveBasis } from 'd3';
@@ -54,14 +54,26 @@ class WeightView extends connect(store)(LitElement) {
     });
 
     /* ADD DATA TO STATE! */
-    this._updateWeight();
   }
 
   stateChanged(state) {
     if (this.weightData !== state.weightData) {
       this.weightData = state.weightData;
-      this.movingAverage = getMovingAverage(this.weightData, 5);
+      this.movingAverage = getMovingAverage(this.weightData, 3);
     }
+  }
+
+  _handleRemove(e) {
+    const date = e.target.id.split('_')[1];
+
+    fetch(`${backendAddress}/api/removeWeight`, {
+      method: 'POST',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ date }),
+    });
   }
 
   render() {
@@ -104,6 +116,14 @@ class WeightView extends connect(store)(LitElement) {
                     : entry.date.getMonth() + 1}.${entry.date.getFullYear()}
                 </td>
                 <td>${entry.weight}</td>
+                <td>
+                  <button
+                    id="rem_${getSqlDate(entry.date)}"
+                    @click="${this._handleRemove}"
+                  >
+                    Remove
+                  </button>
+                </td>
               </tr>`;
             })}
           </table>

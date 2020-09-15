@@ -5,8 +5,12 @@ function getTodayDate(diffMonth) {
     today.setMonth(today.getMonth() - diffMonth);
   }
 
-  let month = today.getMonth() + 1;
-  let day = today.getDate();
+  return getSqlDate(today);
+}
+
+function getSqlDate(date) {
+  let month = date.getMonth() + 1;
+  let day = date.getDate();
 
   if (month < 10) {
     month = `0${month}`;
@@ -16,7 +20,7 @@ function getTodayDate(diffMonth) {
     day = `0${day}`;
   }
 
-  return `${today.getFullYear()}-${month}-${day}`;
+  return `${date.getFullYear()}-${month}-${day}`;
 }
 
-module.exports = { getTodayDate };
+module.exports = { getTodayDate, getSqlDate };

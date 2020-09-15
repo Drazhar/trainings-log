@@ -82,6 +82,19 @@ router.post('/addWeight', (req, res) => {
   );
 });
 
+router.post('/removeWeight', (req, res) => {
+  const userId = req.user.id;
+  const date = req.body.date;
+
+  req.db.query(
+    `DELETE FROM weight WHERE user_id='${userId}' AND date='${date}';`,
+    (error) => {
+      if (error) throw error;
+      res.sendStatus(200);
+    }
+  );
+});
+
 router.get('/getWeight', (req, res) => {
   let fromDateString = '';
   let toDateString = '';
