@@ -88,7 +88,7 @@ class WeightView extends connect(store)(LitElement) {
             <input type="date" id="date" value="${getTodayDate()}" isRequired />
             <label for="weight">Weight</label>
             <input type="number" id="weight" isRequired />
-            <input type="submit" @click="${this._handleSubmit}" />
+            <input type="submit" value="Add" @click="${this._handleSubmit}" />
           </form>
           <table
             id="weightRawData"

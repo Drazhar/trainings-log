@@ -20,6 +20,7 @@ class LoginForm extends connect(store)(LitElement) {
   }
 
   _handleLogin(e) {
+    e.preventDefault();
     const email = document.getElementById('email').value;
     const password = document.getElementById('password').value;
     const data = {
@@ -46,6 +47,7 @@ class LoginForm extends connect(store)(LitElement) {
   }
 
   _handleRegister(e) {
+    e.preventDefault();
     const email = document.getElementById('email').value;
     const password = document.getElementById('password').value;
     const data = {
@@ -92,7 +94,7 @@ class LoginForm extends connect(store)(LitElement) {
   render() {
     return html`
       <div id="login-container" @click="${this._closeLoginForm}">
-        <div id="login-wrapper">
+        <form id="login-wrapper">
           <div id="login-headers">
             <h1
               class=${classMap(this.loginClasses)}
@@ -107,6 +109,7 @@ class LoginForm extends connect(store)(LitElement) {
               REGISTER
             </h1>
           </div>
+
           <label for="email">E-Mail:</label>
           <input
             type="text"
@@ -137,22 +140,29 @@ class LoginForm extends connect(store)(LitElement) {
 
           <div id="login-buttons">
             ${this.mode === 'login'
-              ? html`<button
+              ? html`<input
+                  type="submit"
+                  value="Login"
                   @click="${this._handleLogin}"
                   class="outlined-button"
                   id="login"
-                >
-                  Login
-                </button>`
-              : html` <button
+                />`
+              : html` <input
+                  type="submit"
+                  value="Register"
                   @click="${this._handleRegister}"
                   class="outlined-button"
                   id="login"
-                >
-                  Register
-                </button>`}
+                />`}
+            <button
+              @click="${this._closeLoginForm}"
+              class="outlined-button"
+              id="cancel"
+            >
+              Cancel
+            </button>
           </div>
-        </div>
+        </form>
       </div>
     `;
   }

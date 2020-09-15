@@ -177,17 +177,23 @@ nav {
   #login-buttons {
     margin-top: 24px;
     display: flex;
-    justify-content: center;
+    justify-content: space-between;
 
     #login {
+      min-width: 80px;
+      width: 45%;
+      max-width: 170px;
       background: rgba($primary-color, 1);
       border: none;
       color: $background-color;
+      text-align: center;
+      vertical-align: center;
     }
 
     button {
+      min-width: 80px;
       width: 45%;
-      font-size: large;
+      max-width: 170px;
     }
   }
 }
