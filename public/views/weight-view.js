@@ -6,6 +6,7 @@ import { getWeightData } from '../src/redux/actions';
 import * as d3 from 'd3';
 import { curveBasis } from 'd3';
 import { getMovingAverage } from '../src/movingAverage';
+import { backendAddress } from '../src/env';
 
 class WeightView extends connect(store)(LitElement) {
   static get properties() {
@@ -43,7 +44,7 @@ class WeightView extends connect(store)(LitElement) {
     const weight = inputForm[0].querySelector('#weight').value;
     const date = inputForm[0].querySelector('#date').value;
 
-    fetch('http://localhost:3000/api/addWeight', {
+    fetch(`${backendAddress}/api/addWeight`, {
       method: 'POST',
       credentials: 'include',
       headers: {

@@ -3,6 +3,7 @@ import { classMap } from 'lit-html/directives/class-map.js';
 import { connect } from 'pwa-helpers';
 import { store } from '../src/redux/store';
 import { updateUserAuthenticated } from '../src/redux/actions';
+import { backendAddress } from '../src/env';
 
 class LoginForm extends connect(store)(LitElement) {
   static get properties() {
@@ -25,7 +26,7 @@ class LoginForm extends connect(store)(LitElement) {
       email,
       password,
     };
-    fetch('http://localhost:3000/api/login', {
+    fetch(`${backendAddress}/api/login`, {
       method: 'POST',
       credentials: 'include',
       headers: {
@@ -51,7 +52,7 @@ class LoginForm extends connect(store)(LitElement) {
       email,
       password,
     };
-    fetch('http://localhost:3000/api/addUser', {
+    fetch(`${backendAddress}/api/addUser`, {
       method: 'POST',
       credentials: 'include',
       headers: {

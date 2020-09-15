@@ -1,4 +1,5 @@
 import { store } from './store';
+import { backendAddress } from '../env';
 
 export const UPDATE_USER_AUTHENTICATED = 'UPDATE_USER_AUTHENTICATED';
 export const GET_WEIGHT_DATA = 'GET_WEIGHT_DATA';
@@ -11,7 +12,7 @@ export function updateUserAuthenticated(isUserAuthenticated) {
 }
 
 export function getWeightData(fromDate, toDate) {
-  let fetchURL = 'http://localhost:3000/api/getWeight';
+  let fetchURL = `${backendAddress}/api/getWeight`;
   if (fromDate || toDate) {
     fetchURL += '?';
   }
@@ -24,8 +25,6 @@ export function getWeightData(fromDate, toDate) {
   if (toDate) {
     fetchURL += `toDate=${toDate}`;
   }
-
-  console.log(fetchURL);
 
   fetch(fetchURL, {
     method: 'GET',

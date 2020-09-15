@@ -1,5 +1,7 @@
+import { backendAddress } from './env';
+
 export function getUserAuth() {
-  return fetch('http://localhost:3000/api/userStatus', {
+  return fetch(`${backendAddress}/api/userStatus`, {
     method: 'GET',
     credentials: 'include',
   })
