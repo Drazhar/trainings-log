@@ -113,4 +113,72 @@ router.get('/getWeight', (req, res) => {
   );
 });
 
+router.post('/editExercise', (req, res) => {
+  const userID = req.user.id;
+
+  Object.keys(req.body).forEach((exerciseId) => {
+    const name = req.body[exerciseId].name;
+    const color = req.body[exerciseId].color;
+    const description = req.body[exerciseId].description;
+
+    req.db.query(
+      `INSERT INTO exercise (id, name, user_id, color, description) VALUES('${exerciseId}', '${name}', '${userID}', '${color}', '${description}') ON DUPLICATE KEY UPDATE name=VALUES(name),user_id=VALUES(user_id),color=VALUES(color),description=VALUES(description);`,
+      (error) => {
+        if (error) throw error;
+
+        req.body[exerciseId].logs.forEach((entry, index) => {
+          if (entry.unit == '') {
+            entry.unit = null;
+          }
+
+          req.db.query(
+            `INSERT INTO log_table (exercise_id, i, name, unit) VALUES('${exerciseId}', ${index}, '${entry.name}', '${entry.unit}') ON DUPLICATE KEY UPDATE name=VALUES(name),unit=VALUES(unit);`,
+            (error) => {
+              if (error) throw error;
+            }
+          );
+        });
+      }
+    );
+  });
+  res.sendStatus(200);
+});
+
+router.get('/getExercises', (req, res) => {
+  req.db.query(
+    `SELECT * FROM exercise WHERE user_id = '${req.user.id}';`,
+    (err, result_exercise) => {
+      if (err) throw err;
+
+      let callbackCounter = 0;
+      for (let i = 0; i < result_exercise.length; i++) {
+        result_exercise[i].test = 'dummy';
+        req.db.query(
+          `SELECT name, unit FROM log_table WHERE exercise_id='${result_exercise[i].id}' ORDER BY i ASC;`,
+          (err, result_logs) => {
+            if (err) throw err;
+
+            result_exercise[i].logs = result_logs;
+            callbackCounter++;
+            if (callbackCounter === result_exercise.length) {
+              res.status(200).send(result_exercise);
+            }
+          }
+        );
+      }
+    }
+  );
+});
+
+router.post('/removeExercise', (req, res) => {
+  const userId = req.user.id;
+  req.db.query(
+    `DELETE FROM exercise WHERE id='${req.body.id}' AND user_id='${userId}';`,
+    (error) => {
+      if (error) throw error;
+      res.sendStatus(200);
+    }
+  );
+});
+
 module.exports = router;

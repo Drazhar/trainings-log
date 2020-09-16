@@ -1,10 +1,15 @@
-import { UPDATE_USER_AUTHENTICATED, GET_WEIGHT_DATA } from './actions';
+import {
+  UPDATE_USER_AUTHENTICATED,
+  GET_WEIGHT_DATA,
+  SET_EXERCISES,
+  REMOVE_EXERCISE,
+} from './actions';
 
 const INITIAL_STATE = {
   isUserAuthenticated: false,
   userID: '',
   weightData: [],
-  exercises: [],
+  exercises: {},
 };
 
 export function reducer(state = INITIAL_STATE, action) {
@@ -18,6 +23,16 @@ export function reducer(state = INITIAL_STATE, action) {
       return Object.assign({}, state, {
         weightData: action.weightData,
       });
+    case SET_EXERCISES:
+      return Object.assign({}, state, {
+        exercises: Object.assign({}, state.exercises, action.exerciseData),
+      });
+    case REMOVE_EXERCISE:
+      let result = Object.assign({}, state, {
+        exercises: Object.assign({}, state.exercises),
+      });
+      delete result.exercises[action.exerciseId];
+      return result;
     default:
       return state;
   }

@@ -2,6 +2,11 @@ export function displayForm(e) {
   let name = extractName(e);
   document.removeEventListener(`open-${name}`, displayForm);
   let form = document.createElement(name);
+  if (e.detail) {
+    Object.keys(e.detail).forEach((key) => {
+      form.setAttribute(key, e.detail[key]);
+    });
+  }
   document.querySelector('main').appendChild(form);
   document.addEventListener(`close-${name}`, closeForm);
 }

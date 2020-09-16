@@ -1,31 +1,92 @@
 import { LitElement, html } from 'lit-element';
 import { connect } from 'pwa-helpers';
 import { store } from '../src/redux/store';
-import { updateUserAuthenticated } from '../src/redux/actions';
+import { updateExercise } from '../src/redux/actions';
+import { nanoid } from 'nanoid';
 import { backendAddress } from '../src/env';
 
 class ExerciseForm extends connect(store)(LitElement) {
   static get properties() {
     return {
-      logs: { type: Array },
+      exId: { type: String },
+      currentExercise: { type: Object },
     };
   }
 
-  constructor() {
-    super();
-    this.logs = [];
+  connectedCallback() {
+    super.connectedCallback();
+    if (this.exId) {
+      this.currentExercise = store.getState().exercises[this.exId];
+    } else {
+      this.currentExercise = {
+        name: '',
+        color: '',
+        logs: [{ name: '', unit: '' }],
+        description: '',
+        tags: '',
+      };
+    }
   }
 
   _addLog(e) {
-    let oldVal = [...this.logs];
-    this.logs.push({ name: '', unit: '' });
-    this.requestUpdate(this.logs, oldVal);
+    let oldVal = Object.assign(this.currentExercise);
+    this.currentExercise.logs.push({ name: '', unit: '' });
+    this.requestUpdate(this.currentExercise, oldVal);
   }
 
   _closeForm(e) {
-    if (document.getElementById('form-container') == e.target) {
+    if (e) {
+      if (document.getElementById('form-container') == e.target) {
+        document.dispatchEvent(new CustomEvent('close-exercise-form', {}));
+      }
+    } else {
       document.dispatchEvent(new CustomEvent('close-exercise-form', {}));
     }
+  }
+
+  _saveExercise(e) {
+    e.preventDefault();
+    const name = document.getElementById('name').value;
+    const color = document.getElementById('color').value;
+    const description = document.getElementById('description').value;
+    const tags = document.getElementById('tags').value;
+    for (let i = 0; i < this.currentExercise.logs.length; i++) {
+      this.currentExercise.logs[i].name = document.getElementById(
+        `name_${i}`
+      ).value;
+      this.currentExercise.logs[i].unit = document.getElementById(
+        `unit_${i}`
+      ).value;
+    }
+    let id = '';
+    if (this.exId == null || this.exId == undefined || this.exId == false) {
+      id = nanoid(10);
+    } else {
+      id = this.exId;
+    }
+
+    let exerciseObj = {};
+    exerciseObj[id] = {
+      name,
+      color,
+      description,
+      tags,
+      logs: this.currentExercise.logs,
+    };
+
+    updateExercise(exerciseObj);
+
+    // SEND TO BACKEND FOR DATABASE
+    fetch(`${backendAddress}/api/editExercise`, {
+      method: 'POST',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(exerciseObj),
+    });
+
+    this._closeForm();
   }
 
   render() {
@@ -37,15 +98,45 @@ class ExerciseForm extends connect(store)(LitElement) {
             type="text"
             name="name"
             id="name"
+            value="${this.currentExercise.name}"
             placeholder="Exercise name"
             isRequired
           />
+          <label for="color">Color</label>
+          <input
+            type="color"
+            name="color"
+            id="color"
+            value="${this.currentExercise.color}"
+          />
+          ${this.currentExercise.logs.map(
+            (item, index) =>
+              html`
+                <label for="name_${index}">Log ${index + 1}</label>
+                <input
+                  type="text"
+                  name="name_${index}"
+                  id="name_${index}"
+                  value="${item.name}"
+                  placeholder="${index + 1}. Value name to log"
+                />
+                <label for="unit${index}">Unit ${index + 1}</label>
+                <input
+                  type="text"
+                  name="unit_${index}"
+                  id="unit_${index}"
+                  value="${item.unit}"
+                  placeholder="${index + 1}. Unit"
+                />
+              `
+          )}
           <label for="description">Description</label>
           <input
             type="text"
             name="description"
             placeholder="(optional) Exercise description"
             id="description"
+            value="${this.currentExercise.description}"
           />
           <label for="tags">Tags</label>
           <input
@@ -53,22 +144,13 @@ class ExerciseForm extends connect(store)(LitElement) {
             name="tags"
             id="tags"
             placeholder="(optional) Exercise tags"
+            value="${this.currentExercise.tags}"
           />
-          <label for="color">Color</label>
-          <input type="color" name="color" id="color" />
-          ${this.logs.map(
-            (item, index) =>
-              html`
-                <label for="log_${index}">Log ${index + 1}</label>
-                <input
-                  type="text"
-                  name="log_${index}"
-                  id="log_${index}"
-                  value="${item.name}"
-                  placeholder="${index + 1}. Value name to log"
-                />
-              `
-          )}
+          <input
+            type="submit"
+            id="exerciseForm-submit"
+            @click="${this._saveExercise}"
+          />
         </form>
         <button @click="${this._addLog}">Add log</button>
       </div>
