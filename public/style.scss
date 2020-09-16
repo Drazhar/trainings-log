@@ -116,7 +116,8 @@ nav {
 #login-wrapper {
   color: $max-white;
   position: absolute;
-  top: 8em;
+  top: 10vh;
+  max-height: 80vh;
   right: 1em;
   left: 1em;
   padding: 20px;
@@ -124,6 +125,7 @@ nav {
   border-radius: 15px;
   display: flex;
   flex-direction: column;
+  overflow-y: scroll;
 
   #login-headers {
     display: flex;

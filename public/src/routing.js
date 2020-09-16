@@ -42,7 +42,6 @@ function initRouter() {
 }
 
 function activeMenuItem(itemId) {
-  // Get all buttons with class="btn" inside the container
   var btns = document.getElementsByClassName('nav-button');
 
   for (var i = 0; i < btns.length; i++) {
