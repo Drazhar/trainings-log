@@ -1,0 +1,56 @@
+@use './globalVars';
+
+#fullscreen-popup {
+  color: var(--max-white);
+  position: fixed;
+  top: 0;
+  right: 0;
+  left: 0;
+  bottom: 0;
+  z-index: 1;
+  background-color: var(--background-color);
+  background: radial-gradient(
+    circle at top right,
+    var(--background-color-sec),
+    var(--background-color)
+  );
+  background-repeat: no-repeat;
+
+  overflow-y: scroll;
+}
+
+.workout-exercise-card {
+  background-color: rgb(53, 86, 94);
+  padding: 10px;
+  margin: 15px;
+  border-radius: 10px;
+
+  h3 {
+    font-weight: 400;
+    margin-bottom: 10px;
+  }
+}
+
+#close-workout {
+  position: fixed;
+  bottom: 1.5em;
+  left: 5vmin;
+  width: 30vmin;
+  max-width: 120px;
+  background: var(--nav-bg-color);
+  color: lightcoral;
+  border-color: lightcoral;
+}
+
+#save-workout {
+  position: fixed;
+  bottom: 1.5em;
+  right: 5vmin;
+  max-width: 170px;
+  width: 50vmin;
+  background: var(--primary-color);
+  border: none;
+  color: var(--background-color);
+  text-align: center;
+  vertical-align: center;
+}

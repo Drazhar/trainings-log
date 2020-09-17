@@ -1,13 +1,6 @@
-$background-color: #00111a;
-$background-color-sec: #001724;
-
-$nav-bg-color: #18191a;
-$max-white: #f0f0f0;
-
-$primary-color: #29a6c9;
-$secondary-color: #0be3ae;
-
+@use 'styles/globalVars';
 @use 'styles/exerciseForm';
+@use 'styles/workoutView';
 
 * {
   padding: 0;
@@ -20,8 +13,8 @@ $secondary-color: #0be3ae;
   flex-direction: row;
   padding: 4px 16px;
   height: 36px;
-  border: 1px solid rgba($primary-color, 1);
-  color: rgba($primary-color, 1);
+  border: 1px solid rgba(var(--primary-color-rgb), 1);
+  color: rgba(var(--primary-color-rgb), 1);
   border-radius: 4px;
 }
 
@@ -52,11 +45,11 @@ body {
 }
 
 body {
-  background-color: $background-color;
+  background-color: var(--background-color);
   background: radial-gradient(
     circle at top right,
-    $background-color-sec,
-    $background-color
+    var(--background-color-sec),
+    var(--background-color)
   );
   background-repeat: no-repeat;
 
@@ -69,11 +62,11 @@ main {
 }
 
 nav {
-  background-color: $nav-bg-color;
-  // border-top: 1px solid rgba($primary-color, 0.1);
-  // box-shadow: 0 0 4rem 4rem rgba($primary-color, 0.03),
-  //   0 0 2rem 2rem rgba($primary-color, 0.02),
-  //   inset 0 4rem 4rem -3rem rgba($primary-color, 0.1);
+  background-color: var(--nav-bg-color);
+  // border-top: 1px solid rgba(var(--primary-color), 0.1);
+  // box-shadow: 0 0 4rem 4rem rgba(var(--primary-color), 0.03),
+  //   0 0 2rem 2rem rgba(var(--primary-color), 0.02),
+  //   inset 0 4rem 4rem -3rem rgba(var(--primary-color), 0.1);
   display: flex;
   align-items: center;
   justify-content: space-around;
@@ -91,11 +84,11 @@ nav {
   height: 87%;
 
   img {
-    height: 1.8rem;
+    height: 2rem;
   }
 
   p {
-    color: $max-white;
+    color: var(--max-white);
   }
 }
 
@@ -114,14 +107,14 @@ nav {
 }
 
 #login-wrapper {
-  color: $max-white;
+  color: var(--max-white);
   position: absolute;
   top: 10vh;
   max-height: 80vh;
   right: 1em;
   left: 1em;
   padding: 20px;
-  background-color: $nav-bg-color;
+  background-color: var(--nav-bg-color);
   border-radius: 15px;
   display: flex;
   flex-direction: column;
@@ -134,7 +127,7 @@ nav {
 
     h1 {
       position: relative;
-      color: rgba($primary-color, 1);
+      color: rgba(var(--primary-color-rgb), 1);
       align-self: center;
       font-size: large;
     }
@@ -147,7 +140,7 @@ nav {
       right: 120%;
       left: -20%;
       border-radius: 1px;
-      background-color: rgba($secondary-color, 0.7);
+      background-color: rgba(var(--secondary-color-rgb), 0.7);
       transition: all 0.3s ease-in-out;
     }
 
@@ -159,12 +152,12 @@ nav {
 
     .inactive {
       cursor: pointer;
-      color: rgba(#f0f0f0, 0.5);
+      color: rgba(var(--max-white-rgb), 0.5);
     }
   }
 
   label {
-    color: rgba($max-white, 0.8);
+    color: rgba(var(--max-white-rgb), 0.8);
     font-size: small;
     margin-top: 16px;
     margin-bottom: 3px;
@@ -173,7 +166,7 @@ nav {
   input {
     border-radius: 5px;
     border: none;
-    background-color: rgba($max-white, 0.9);
+    background-color: rgba(var(--max-white-rgb), 0.9);
     padding: 10px;
   }
 
@@ -186,9 +179,9 @@ nav {
       min-width: 80px;
       width: 45%;
       max-width: 170px;
-      background: rgba($primary-color, 1);
+      background: var(--primary-color);
       border: none;
-      color: $background-color;
+      color: var(--background-color);
       text-align: center;
       vertical-align: center;
     }
@@ -219,14 +212,14 @@ nav {
 }
 
 .input-weight {
-  color: $max-white;
+  color: var(--max-white);
 }
 
 #weight-chart {
-  background-color: rgba($max-white, 0.15);
+  background-color: rgba(var(--max-white-rgb), 0.15);
 
   .tick line {
-    stroke: rgba($max-white, 0.2);
+    stroke: rgba(var(--max-white-rgb), 0.2);
   }
 }
 

@@ -1,0 +1,21 @@
+@function hexToRGB($hex) {
+  @return red($hex), green($hex), blue($hex);
+}
+
+$max-white: #f0f0f0;
+$primary-color: #29a6c9;
+$secondary-color: #0be3ae;
+
+:root {
+  --background-color: #00111a;
+  --background-color-sec: #001724;
+
+  --nav-bg-color: #18191a;
+  --max-white: #{$max-white};
+  --max-white-rgb: #{hexToRGB($max-white)};
+
+  --primary-color: #{$primary-color};
+  --primary-color-rgb: #{hexToRGB($primary-color)};
+  --secondary-color: #{$secondary-color};
+  --secondary-color-rgb: #{hexToRGB($secondary-color)};
+}
