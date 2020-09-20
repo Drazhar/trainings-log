@@ -58,7 +58,7 @@ export function removeExercise(exerciseId) {
 export function getExercises() {
   let fetchURL = `${backendAddress}/api/getExercises`;
 
-  fetch(fetchURL, {
+  return fetch(fetchURL, {
     method: 'GET',
     credentials: 'include',
     headers: {

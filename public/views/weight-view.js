@@ -180,8 +180,7 @@ class WeightView extends connect(store)(LitElement) {
       .domain([
         min(this.weightData, (d) => d.weight) - 5,
         max(this.weightData, (d) => d.weight) + 5,
-      ])
-      .nice();
+      ]);
     svg
       .append('g')
       .call(axisLeft(y).ticks(4).tickSize(-width))

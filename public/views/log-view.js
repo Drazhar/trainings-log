@@ -3,11 +3,14 @@ import { connect } from 'pwa-helpers';
 import { store } from '../src/redux/store';
 import '../components/workoutForm';
 import { displayForm } from '../src/eventListener/openCloseForms';
+import { getExercises } from '../src/redux/actions';
 
 class LogView extends connect(store)(LitElement) {
   connectedCallback() {
     super.connectedCallback();
     document.addEventListener('open-workout-form', displayForm);
+    document.dispatchEvent(new CustomEvent('open-workout-form'));
+    getExercises();
   }
 
   disconnectedCallback() {
