@@ -3,6 +3,7 @@ import {
   GET_WEIGHT_DATA,
   SET_EXERCISES,
   REMOVE_EXERCISE,
+  SET_WORKOUTS,
 } from './actions';
 
 const INITIAL_STATE = {
@@ -10,6 +11,7 @@ const INITIAL_STATE = {
   userID: '',
   weightData: [],
   exercises: {},
+  workouts: {},
 };
 
 export function reducer(state = INITIAL_STATE, action) {
@@ -33,6 +35,10 @@ export function reducer(state = INITIAL_STATE, action) {
       });
       delete result.exercises[action.exerciseId];
       return result;
+    case SET_WORKOUTS:
+      return Object.assign({}, state, {
+        workouts: Object.assign({}, state.workouts, action.workoutData),
+      });
     default:
       return state;
   }

@@ -7,6 +7,7 @@ import {
   select,
   curveBasis,
   scaleTime,
+  scalePow,
   scaleLinear,
   line,
   axisLeft,
@@ -149,7 +150,7 @@ class WeightView extends connect(store)(LitElement) {
     const chartArea = document.getElementById('weight-chart');
     chartArea.innerHTML = ''; // delete old chart
 
-    const margin = { top: 15, right: 30, bottom: 20, left: 30 };
+    const margin = { top: 15, right: 20, bottom: 20, left: 20 };
     const width = chartArea.clientWidth - margin.left - margin.right;
     const height = 300 - margin.top - margin.bottom;
 
@@ -162,16 +163,24 @@ class WeightView extends connect(store)(LitElement) {
       .attr('transform', `translate(${margin.left},${margin.top})`);
 
     // X SCALE AND AXIS
-    const x = scaleTime()
+    // const x = scaleTime()
+    //   .range([0, width])
+    //   .domain([
+    //     min(this.weightData, (d) => d.date),
+    //     max(this.weightData, (d) => d.date),
+    //   ]);
+    const today = new Date();
+    const x = scalePow()
+      .exponent(0.25)
       .range([0, width])
       .domain([
-        min(this.weightData, (d) => d.date),
-        max(this.weightData, (d) => d.date),
+        min(this.weightData, (d) => (d.date - today) / 1000 / 60 / 60 / 24),
+        max(this.weightData, (d) => (d.date - today) / 1000 / 60 / 60 / 24),
       ]);
     svg
       .append('g')
       .attr('transform', `translate(0,${height})`)
-      .call(axisBottom(x).ticks(5).tickSize(-height))
+      .call(axisBottom(x).ticks(10).tickSize(-height))
       .attr('color', 'lightgrey');
 
     // Y SCALE AND AXIS
@@ -188,7 +197,7 @@ class WeightView extends connect(store)(LitElement) {
 
     // CREATE LINE
     const lineSmooth = line()
-      .x((d) => x(d.date))
+      .x((d) => x((d.date - today) / 1000 / 60 / 60 / 24))
       .y((d) => y(d.weight))
       .curve(curveBasis);
 
@@ -207,7 +216,9 @@ class WeightView extends connect(store)(LitElement) {
       .enter()
       .append('circle')
       .attr('r', 2)
-      .attr('cx', (d) => x(d.date))
+      .attr('cx', (d) => {
+        return x((d.date - today) / 1000 / 60 / 60 / 24);
+      })
       .attr('cy', (d) => y(d.weight))
       .attr('fill', `RGBA(240,240,240,0.3)`)
       .append('svg:title')

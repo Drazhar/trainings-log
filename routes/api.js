@@ -181,4 +181,96 @@ router.post('/removeExercise', (req, res) => {
   );
 });
 
+router.post('/editWorkout', (req, res) => {
+  const userID = req.user.id;
+  Object.keys(req.body).forEach((workoutId) => {
+    const date = req.body[workoutId].date;
+    const comment = req.body[workoutId].comment;
+    const mood = req.body[workoutId].mood;
+    req.db.query(
+      `INSERT INTO workout (id, user_id, date, comment, mood) VALUES('${workoutId}', '${userID}', '${date}', '${comment}', '${mood}') ON DUPLICATE KEY UPDATE date=VALUES(date),comment=VALUES(comment),mood=VALUES(mood);`,
+      (error) => {
+        if (error) throw error;
+
+        req.body[workoutId].exercises.forEach((exercise, exerciseIndex) => {
+          req.db.query(
+            `INSERT INTO training (workout_id, i, exercise_id) VALUES('${workoutId}', ${exerciseIndex}, '${exercise.id}') ON DUPLICATE KEY UPDATE exercise_id=VALUES(exercise_id);`,
+            (error) => {
+              if (error) throw error;
+
+              exercise.sets.forEach((set, setIndex) => {
+                set.forEach((value, valueIndex) => {
+                  req.db.query(
+                    `INSERT INTO training_values (workout_id, ex_number, set_number, value_i, value) VALUES('${workoutId}', ${exerciseIndex}, ${setIndex}, ${valueIndex}, ${value}) ON DUPLICATE KEY UPDATE value=VALUES(value);`,
+                    (error) => {
+                      if (error) throw error;
+                    }
+                  );
+                });
+              });
+            }
+          );
+        });
+      }
+    );
+  });
+  res.sendStatus(200);
+});
+
+router.get('/getWorkouts', (req, res) => {
+  req.db.query(
+    `SELECT workout.id, workout.date, workout.comment, workout.mood, training.i, training.exercise_id, training_values.set_number, training_values.value_i, training_values.value 
+    FROM workout 
+    JOIN training ON workout.id = training.workout_id 
+    JOIN training_values ON training_values.workout_id = workout.id 
+    AND training_values.ex_number = training.i;`,
+    (err, result) => {
+      let returnObject = {};
+      result.forEach((line) => {
+        if (!(`${line.id}` in returnObject)) {
+          returnObject[line.id] = {
+            date: line.date,
+            comment: line.comment,
+            mood: line.mood,
+            exercises: [],
+          };
+        }
+
+        let keyExists = false;
+        returnObject[line.id].exercises.forEach((exercise) => {
+          if (exercise.id == `${line.exercise_id}`) {
+            keyExists = true;
+          }
+        });
+        if (!keyExists) {
+          returnObject[line.id].exercises.push({
+            id: line.exercise_id,
+            // mood: line.exerciseMood,
+            sets: [],
+          });
+        }
+
+        returnObject[line.id].exercises.forEach((exercise, exIndex) => {
+          if (exercise.id == `${line.exercise_id}`) {
+            if (
+              !returnObject[line.id].exercises[exIndex].sets[line.set_number]
+            ) {
+              returnObject[line.id].exercises[exIndex].sets.push([]);
+            }
+
+            try {
+              returnObject[line.id].exercises[exIndex].sets[line.set_number][
+                line.value_i
+              ] = line.value;
+            } catch (error) {
+              console.log(error);
+            }
+          }
+        });
+      });
+      res.status(200).send(returnObject);
+    }
+  );
+});
+
 module.exports = router;

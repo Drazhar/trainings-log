@@ -1,7 +1,7 @@
 import { LitElement, html } from 'lit-element';
 import { connect } from 'pwa-helpers';
 import { store } from '../src/redux/store';
-import { updateExercise } from '../src/redux/actions';
+import { updateWorkout } from '../src/redux/actions';
 import { nanoid } from 'nanoid';
 import { backendAddress } from '../src/env';
 
@@ -25,7 +25,7 @@ class WorkoutForm extends connect(store)(LitElement) {
       this.currentWorkout = store.getState().workouts[this.exId];
     } else {
       this.currentWorkout = {
-        datetime: '',
+        date: '',
         exercises: [],
         comment: '',
         mood: '',
@@ -60,6 +60,10 @@ class WorkoutForm extends connect(store)(LitElement) {
     const exerciseId = document.getElementById(e.target.id).value;
     this.currentWorkout.exercises[id].id = exerciseId;
     this.requestUpdate(this.currentWorkout, '');
+    this.currentWorkout.exercises[id].sets[0] = new Array(
+      this.exercises[exerciseId].logs.length
+    ).fill(0);
+    console.log(this.currentWorkout);
   }
 
   _removeExercise(e) {
@@ -74,7 +78,9 @@ class WorkoutForm extends connect(store)(LitElement) {
     e.preventDefault();
     const idToAddTo = parseInt(e.target.id.split('_')[1]);
     const oldVal = Object.assign({}, this.currentWorkout);
-    this.currentWorkout.exercises[idToAddTo].sets.push([2]);
+    this.currentWorkout.exercises[idToAddTo].sets.push(
+      new Array(this.currentWorkout.exercises[idToAddTo].sets[0].length).fill(0)
+    );
     this.requestUpdate(this.currentWorkout, oldVal);
   }
 
@@ -91,6 +97,44 @@ class WorkoutForm extends connect(store)(LitElement) {
   _closeForm(e) {
     // CHECK IF THERE IS SOMETHING TO SAVE
     document.dispatchEvent(new CustomEvent('close-workout-form', {}));
+  }
+
+  _saveWorkout(e) {
+    e.preventDefault();
+    console.log(this.currentWorkout);
+
+    this.currentWorkout.date = document.getElementById('date').value;
+    this.currentWorkout.exercises.forEach((exercise, exIndex) => {
+      exercise.sets.forEach((currentSet, setIndex) => {
+        currentSet.forEach((setData, dataIndex) => {
+          this.currentWorkout.exercises[exIndex].sets[setIndex][
+            dataIndex
+          ] = parseInt(
+            document.getElementById(`value_${exIndex}_${setIndex}_${dataIndex}`)
+              .value
+          );
+        });
+      });
+    });
+    this.requestUpdate(this.currentWorkout, '');
+
+    const id = nanoid(8);
+    let reduxObj = {};
+    reduxObj[id] = this.currentWorkout;
+
+    updateWorkout(reduxObj);
+
+    // SEND TO BACKEND FOR DATABASE
+    fetch(`${backendAddress}/api/editWorkout`, {
+      method: 'POST',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(reduxObj),
+    });
+
+    // this._closeForm();
   }
 
   render() {
@@ -132,19 +176,24 @@ class WorkoutForm extends connect(store)(LitElement) {
                     return html`
                       <tr>
                         <td>${setIndex + 1}</td>
-                        ${currentSet.map((setData) => {
+                        ${currentSet.map((setData, dataIndex) => {
                           return html`<td>
-                              <input type="number" value="${setData}" />
-                            </td>
-                            <td>
-                              <button
-                                id="removeSet_${exIndex}_${setIndex}"
-                                @click="${this._removeSet}"
-                              >
-                                Remove
-                              </button>
-                            </td> `;
+                            <input
+                              type="number"
+                              id="value_${exIndex}_${setIndex}_${dataIndex}"
+                              value="${setData}"
+                              style="width:20vw"
+                            />
+                          </td> `;
                         })}
+                        <td>
+                          <button
+                            id="removeSet_${exIndex}_${setIndex}"
+                            @click="${this._removeSet}"
+                          >
+                            Remove
+                          </button>
+                        </td>
                       </tr>
                     `;
                   })}
@@ -174,6 +223,7 @@ class WorkoutForm extends connect(store)(LitElement) {
             value="Save"
             id="save-workout"
             class="outlined-button"
+            @click="${this._saveWorkout}"
           />
         </form>
         <button

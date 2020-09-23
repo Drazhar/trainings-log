@@ -8,6 +8,8 @@ export const GET_WEIGHT_DATA = 'GET_WEIGHT_DATA';
 export const SET_EXERCISES = 'SET_EXERCISES';
 export const REMOVE_EXERCISE = 'REMOVE_EXERCISE';
 
+export const SET_WORKOUTS = 'SET_WORKOUTS';
+
 export function updateUserAuthenticated(isUserAuthenticated) {
   return {
     type: UPDATE_USER_AUTHENTICATED,
@@ -78,4 +80,8 @@ export function getExercises() {
       });
       store.dispatch({ type: SET_EXERCISES, exerciseData });
     });
+}
+
+export function updateWorkout(workoutData) {
+  store.dispatch({ type: SET_WORKOUTS, workoutData });
 }
