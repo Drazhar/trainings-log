@@ -4,6 +4,16 @@ const { isValidEmail } = require('./api_helper/emailValidation');
 const passport = require('passport');
 const router = express.Router();
 
+const isAuthenticated = () => {
+  return (req, res, next) => {
+    if (req.isAuthenticated()) {
+      next();
+    } else {
+      res.sendStatus(401);
+    }
+  };
+};
+
 router.post(
   '/addUser',
   (req, res, next) => {
@@ -68,7 +78,7 @@ router.get('/userStatus', (req, res) => {
   }
 });
 
-router.post('/addWeight', (req, res) => {
+router.post('/addWeight', isAuthenticated(), (req, res) => {
   const userID = req.user.id;
   const weight = req.body.weight;
   const date = req.body.date;
@@ -82,7 +92,7 @@ router.post('/addWeight', (req, res) => {
   );
 });
 
-router.post('/removeWeight', (req, res) => {
+router.post('/removeWeight', isAuthenticated(), (req, res) => {
   const userId = req.user.id;
   const date = req.body.date;
 
@@ -95,7 +105,7 @@ router.post('/removeWeight', (req, res) => {
   );
 });
 
-router.get('/getWeight', (req, res) => {
+router.get('/getWeight', isAuthenticated(), (req, res) => {
   let fromDateString = '';
   let toDateString = '';
 
@@ -113,7 +123,7 @@ router.get('/getWeight', (req, res) => {
   );
 });
 
-router.post('/editExercise', (req, res) => {
+router.post('/editExercise', isAuthenticated(), (req, res) => {
   const userID = req.user.id;
 
   Object.keys(req.body).forEach((exerciseId) => {
@@ -144,7 +154,7 @@ router.post('/editExercise', (req, res) => {
   res.sendStatus(200);
 });
 
-router.get('/getExercises', (req, res) => {
+router.get('/getExercises', isAuthenticated(), (req, res) => {
   req.db.query(
     `SELECT * FROM exercise WHERE user_id = '${req.user.id}';`,
     (err, result_exercise) => {
@@ -170,7 +180,7 @@ router.get('/getExercises', (req, res) => {
   );
 });
 
-router.post('/removeExercise', (req, res) => {
+router.post('/removeExercise', isAuthenticated(), (req, res) => {
   const userId = req.user.id;
   req.db.query(
     `DELETE FROM exercise WHERE id='${req.body.id}' AND user_id='${userId}';`,
@@ -181,7 +191,7 @@ router.post('/removeExercise', (req, res) => {
   );
 });
 
-router.post('/editWorkout', (req, res) => {
+router.post('/editWorkout', isAuthenticated(), (req, res) => {
   const userID = req.user.id;
   Object.keys(req.body).forEach((workoutId) => {
     const date = req.body[workoutId].date;
@@ -217,57 +227,60 @@ router.post('/editWorkout', (req, res) => {
   res.sendStatus(200);
 });
 
-router.get('/getWorkouts', (req, res) => {
+router.get('/getWorkouts', isAuthenticated(), (req, res) => {
   req.db.query(
     `SELECT workout.id, workout.date, workout.comment, workout.mood, training.i, training.exercise_id, training_values.set_number, training_values.value_i, training_values.value 
-    FROM workout 
-    JOIN training ON workout.id = training.workout_id 
-    JOIN training_values ON training_values.workout_id = workout.id 
-    AND training_values.ex_number = training.i;`,
+      FROM workout 
+      JOIN training ON workout.id = training.workout_id 
+      JOIN training_values ON training_values.workout_id = workout.id 
+      AND training_values.ex_number = training.i
+      WHERE workout.user_id = '${req.user.id}';`,
     (err, result) => {
       let returnObject = {};
-      result.forEach((line) => {
-        if (!(`${line.id}` in returnObject)) {
-          returnObject[line.id] = {
-            date: line.date,
-            comment: line.comment,
-            mood: line.mood,
-            exercises: [],
-          };
-        }
-
-        let keyExists = false;
-        returnObject[line.id].exercises.forEach((exercise) => {
-          if (exercise.id == `${line.exercise_id}`) {
-            keyExists = true;
+      if (result.length > 0) {
+        result.forEach((line) => {
+          if (!(`${line.id}` in returnObject)) {
+            returnObject[line.id] = {
+              date: line.date,
+              comment: line.comment,
+              mood: line.mood,
+              exercises: [],
+            };
           }
-        });
-        if (!keyExists) {
-          returnObject[line.id].exercises.push({
-            id: line.exercise_id,
-            // mood: line.exerciseMood,
-            sets: [],
+
+          let keyExists = false;
+          returnObject[line.id].exercises.forEach((exercise) => {
+            if (exercise.id == `${line.exercise_id}`) {
+              keyExists = true;
+            }
           });
-        }
-
-        returnObject[line.id].exercises.forEach((exercise, exIndex) => {
-          if (exercise.id == `${line.exercise_id}`) {
-            if (
-              !returnObject[line.id].exercises[exIndex].sets[line.set_number]
-            ) {
-              returnObject[line.id].exercises[exIndex].sets.push([]);
-            }
-
-            try {
-              returnObject[line.id].exercises[exIndex].sets[line.set_number][
-                line.value_i
-              ] = line.value;
-            } catch (error) {
-              console.log(error);
-            }
+          if (!keyExists) {
+            returnObject[line.id].exercises.push({
+              id: line.exercise_id,
+              // mood: line.exerciseMood,
+              sets: [],
+            });
           }
+
+          returnObject[line.id].exercises.forEach((exercise, exIndex) => {
+            if (exercise.id == `${line.exercise_id}`) {
+              if (
+                !returnObject[line.id].exercises[exIndex].sets[line.set_number]
+              ) {
+                returnObject[line.id].exercises[exIndex].sets.push([]);
+              }
+
+              try {
+                returnObject[line.id].exercises[exIndex].sets[line.set_number][
+                  line.value_i
+                ] = line.value;
+              } catch (error) {
+                console.log(error);
+              }
+            }
+          });
         });
-      });
+      }
       res.status(200).send(returnObject);
     }
   );

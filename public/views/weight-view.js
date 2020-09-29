@@ -43,7 +43,8 @@ class WeightView extends connect(store)(LitElement) {
     if (range === 0) {
       getWeightData();
     } else {
-      getWeightData(getTodayDate(range), getTodayDate());
+      getWeightData();
+      // getWeightData(getTodayDate(range), getTodayDate());
     }
   }
 
@@ -171,17 +172,25 @@ class WeightView extends connect(store)(LitElement) {
     //   ]);
     const today = new Date();
     const x = scalePow()
-      .exponent(0.25)
+      .exponent(0.4)
       .range([0, width])
       .domain([
-        min(this.weightData, (d) => (d.date - today) / 1000 / 60 / 60 / 24),
+        // min(this.weightData, (d) => (d.date - today) / 1000 / 60 / 60 / 24),
+        -90,
         max(this.weightData, (d) => (d.date - today) / 1000 / 60 / 60 / 24),
       ]);
     svg
       .append('g')
       .attr('transform', `translate(0,${height})`)
-      .call(axisBottom(x).ticks(10).tickSize(-height))
+      .call(axisBottom(x).tickValues([-7, -14, -21, -28]).tickSize(-height))
       .attr('color', 'lightgrey');
+    svg
+      .append('defs')
+      .append('clipPath')
+      .attr('id', 'clip')
+      .append('rect')
+      .attr('width', width)
+      .attr('height', height);
 
     // Y SCALE AND AXIS
     const y = scaleLinear()
@@ -194,20 +203,6 @@ class WeightView extends connect(store)(LitElement) {
       .append('g')
       .call(axisLeft(y).ticks(4).tickSize(-width))
       .attr('color', 'lightgrey');
-
-    // CREATE LINE
-    const lineSmooth = line()
-      .x((d) => x((d.date - today) / 1000 / 60 / 60 / 24))
-      .y((d) => y(d.weight))
-      .curve(curveBasis);
-
-    svg
-      .append('path')
-      .attr('d', lineSmooth(this.movingAverage))
-      .attr('stroke', '#29a6c9')
-      .attr('stroke-width', 3)
-      .attr('fill', 'none')
-      .attr('stroke-linejoin', 'round');
 
     // CREATE DOTS
     svg
@@ -223,6 +218,21 @@ class WeightView extends connect(store)(LitElement) {
       .attr('fill', `RGBA(240,240,240,0.3)`)
       .append('svg:title')
       .text((d, i) => `blabla`);
+
+    // CREATE LINE
+    const lineSmooth = line()
+      .x((d) => x((d.date - today) / 1000 / 60 / 60 / 24))
+      .y((d) => y(d.weight))
+      .curve(curveBasis);
+
+    svg
+      .append('path')
+      .attr('clip-path', 'url(#clip)')
+      .attr('d', lineSmooth(this.movingAverage))
+      .attr('stroke', '#29a6c9')
+      .attr('stroke-width', 3)
+      .attr('fill', 'none')
+      .attr('stroke-linejoin', 'round');
   }
 
   createRenderRoot() {

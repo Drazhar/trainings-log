@@ -44,17 +44,6 @@ app.use((req, res, next) => {
 app.use(passport.initialize());
 app.use(passport.session());
 
-// JUST FOR DEBUGGING
-app.use((req, res, next) => {
-  // console.log(req.user);
-  if (req.isAuthenticated()) {
-    // console.log(`User ${req.user.id} makes this request.`);
-  } else {
-    // console.log('A unknown user makes this request.');
-  }
-  next();
-});
-
 // Routes
 app.use('/api', require('./routes/api'));
 

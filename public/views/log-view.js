@@ -4,12 +4,26 @@ import { store } from '../src/redux/store';
 import '../components/workoutForm';
 import { displayForm } from '../src/eventListener/openCloseForms';
 import { getExercises } from '../src/redux/actions';
+import { backendAddress } from '../src/env';
 
 class LogView extends connect(store)(LitElement) {
   connectedCallback() {
     super.connectedCallback();
     document.addEventListener('open-workout-form', displayForm);
     // document.dispatchEvent(new CustomEvent('open-workout-form'));
+
+    fetch(`${backendAddress}/api/getWorkouts`, {
+      method: 'GET',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    })
+      .then((response) => response.json())
+      .then((workouts) => {
+        console.log(workouts);
+      });
+
     getExercises();
   }
 
