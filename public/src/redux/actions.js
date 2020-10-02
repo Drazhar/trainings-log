@@ -76,9 +76,25 @@ export function getExercises() {
           color: item.color,
           description: item.description,
           logs: item.logs,
+          count: item.count,
+          lastUsed: new Date(item.lastUsed),
         };
       });
       store.dispatch({ type: SET_EXERCISES, exerciseData });
+    });
+}
+
+export function getWorkouts() {
+  fetch(`${backendAddress}/api/getWorkouts`, {
+    method: 'GET',
+    credentials: 'include',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  })
+    .then((response) => response.json())
+    .then((workoutData) => {
+      store.dispatch({ type: SET_WORKOUTS, workoutData });
     });
 }
 

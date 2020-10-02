@@ -3,7 +3,7 @@ const private = require('./variables.private.js');
 
 // Connect to database
 const connectionPool = (pool = mysql.createPool({
-  connectionLimit: 20,
+  connectionLimit: 10,
   user: private.user,
   password: private.password,
   database: private.database,

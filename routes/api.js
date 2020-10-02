@@ -4,7 +4,7 @@ const { isValidEmail } = require('./api_helper/emailValidation');
 const passport = require('passport');
 const router = express.Router();
 
-const isAuthenticated = () => {
+const requireAuthentication = () => {
   return (req, res, next) => {
     if (req.isAuthenticated()) {
       next();
@@ -78,7 +78,7 @@ router.get('/userStatus', (req, res) => {
   }
 });
 
-router.post('/addWeight', isAuthenticated(), (req, res) => {
+router.post('/addWeight', requireAuthentication(), (req, res) => {
   const userID = req.user.id;
   const weight = req.body.weight;
   const date = req.body.date;
@@ -92,7 +92,7 @@ router.post('/addWeight', isAuthenticated(), (req, res) => {
   );
 });
 
-router.post('/removeWeight', isAuthenticated(), (req, res) => {
+router.post('/removeWeight', requireAuthentication(), (req, res) => {
   const userId = req.user.id;
   const date = req.body.date;
 
@@ -105,7 +105,7 @@ router.post('/removeWeight', isAuthenticated(), (req, res) => {
   );
 });
 
-router.get('/getWeight', isAuthenticated(), (req, res) => {
+router.get('/getWeight', requireAuthentication(), (req, res) => {
   let fromDateString = '';
   let toDateString = '';
 
@@ -123,7 +123,7 @@ router.get('/getWeight', isAuthenticated(), (req, res) => {
   );
 });
 
-router.post('/editExercise', isAuthenticated(), (req, res) => {
+router.post('/editExercise', requireAuthentication(), (req, res) => {
   const userID = req.user.id;
 
   Object.keys(req.body).forEach((exerciseId) => {
@@ -154,23 +154,59 @@ router.post('/editExercise', isAuthenticated(), (req, res) => {
   res.sendStatus(200);
 });
 
-router.get('/getExercises', isAuthenticated(), (req, res) => {
+router.get('/getExercises', requireAuthentication(), (req, res) => {
   req.db.query(
     `SELECT * FROM exercise WHERE user_id = '${req.user.id}';`,
     (err, result_exercise) => {
       if (err) throw err;
 
       let callbackCounter = 0;
+      console.time('test');
       for (let i = 0; i < result_exercise.length; i++) {
-        result_exercise[i].test = 'dummy';
-        req.db.query(
-          `SELECT name, unit FROM log_table WHERE exercise_id='${result_exercise[i].id}' ORDER BY i ASC;`,
-          (err, result_logs) => {
-            if (err) throw err;
+        promiseGetDate = new Promise((resolve, reject) => {
+          req.db.query(
+            `SELECT workout.date AS date FROM workout JOIN training ON workout.id = training.workout_id WHERE workout.user_id = '${req.user.id}' AND exercise_id = '${result_exercise[i].id}' ORDER BY workout.date DESC LIMIT 1;`,
+            (err, result_count) => {
+              if (err) throw err;
 
-            result_exercise[i].logs = result_logs;
+              result_exercise[i].lastUsed = result_count[0].date;
+
+              resolve();
+            }
+          );
+        });
+
+        promiseGetCount = new Promise((resolve, reject) => {
+          req.db.query(
+            `SELECT COUNT(training.exercise_id) AS count FROM workout JOIN training ON workout.id = training.workout_id WHERE workout.user_id = '${req.user.id}' AND exercise_id = '${result_exercise[i].id}';`,
+            (err, result_count) => {
+              if (err) throw err;
+
+              result_exercise[i].count = result_count[0].count;
+
+              resolve();
+            }
+          );
+        });
+
+        promiseGetLogs = new Promise((resolve, reject) => {
+          req.db.query(
+            `SELECT name, unit FROM log_table WHERE exercise_id='${result_exercise[i].id}' ORDER BY i ASC;`,
+            (err, result_logs) => {
+              if (err) throw err;
+
+              result_exercise[i].logs = result_logs;
+
+              resolve();
+            }
+          );
+        });
+
+        Promise.all([promiseGetDate, promiseGetCount, promiseGetLogs]).then(
+          () => {
             callbackCounter++;
             if (callbackCounter === result_exercise.length) {
+              console.timeEnd('test');
               res.status(200).send(result_exercise);
             }
           }
@@ -180,7 +216,7 @@ router.get('/getExercises', isAuthenticated(), (req, res) => {
   );
 });
 
-router.post('/removeExercise', isAuthenticated(), (req, res) => {
+router.post('/removeExercise', requireAuthentication(), (req, res) => {
   const userId = req.user.id;
   req.db.query(
     `DELETE FROM exercise WHERE id='${req.body.id}' AND user_id='${userId}';`,
@@ -191,15 +227,16 @@ router.post('/removeExercise', isAuthenticated(), (req, res) => {
   );
 });
 
-router.post('/editWorkout', isAuthenticated(), (req, res) => {
+router.post('/editWorkout', requireAuthentication(), (req, res) => {
   const userID = req.user.id;
   Object.keys(req.body).forEach((workoutId) => {
     const date = req.body[workoutId].date;
     const comment = req.body[workoutId].comment;
     const mood = req.body[workoutId].mood;
+
     req.db.query(
-      `INSERT INTO workout (id, user_id, date, comment, mood) VALUES('${workoutId}', '${userID}', '${date}', '${comment}', '${mood}') ON DUPLICATE KEY UPDATE date=VALUES(date),comment=VALUES(comment),mood=VALUES(mood);`,
-      (error) => {
+      `INSERT INTO workout (id, user_id, date, comment, mood) VALUES('${workoutId}', '${userID}', '${date}', '${comment}', '${mood}') AS data ON DUPLICATE KEY UPDATE date=data.date,comment=data.comment,mood=data.mood;`,
+      (error, results) => {
         if (error) throw error;
 
         req.body[workoutId].exercises.forEach((exercise, exerciseIndex) => {
@@ -227,7 +264,7 @@ router.post('/editWorkout', isAuthenticated(), (req, res) => {
   res.sendStatus(200);
 });
 
-router.get('/getWorkouts', isAuthenticated(), (req, res) => {
+router.get('/getWorkouts', requireAuthentication(), (req, res) => {
   req.db.query(
     `SELECT workout.id, workout.date, workout.comment, workout.mood, training.i, training.exercise_id, training_values.set_number, training_values.value_i, training_values.value 
       FROM workout 
