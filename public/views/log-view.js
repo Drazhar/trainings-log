@@ -37,7 +37,6 @@ class LogView extends connect(store)(LitElement) {
     if (this.exercises !== state.exercises) {
       this.exercises = state.exercises;
       this.exerciseOrder = getExerciseOrder(this.exercises);
-      console.log(this.exerciseOrder);
     }
   }
 
@@ -59,7 +58,6 @@ class LogView extends connect(store)(LitElement) {
             <tbody>
               ${this.exerciseOrder.map((exInfo) => {
                 if (exInfo[2] > 0) {
-                  console.log(this.exercises[exInfo[0]].name);
                   return html`
                     <tr>
                       <td
@@ -68,6 +66,7 @@ class LogView extends connect(store)(LitElement) {
                         <log-chart
                           style="flex-grow:1"
                           .chartData="${this.exerciseWoData[exInfo[0]]}"
+                          .color="${this.exercises[exInfo[0]].color}"
                         ></log-chart>
                         <table
                           style="background-color:red;width:30%;min-width:50px;max-width:150px;overflow:hidden"
@@ -127,7 +126,15 @@ function getExerciseWoData(workouts) {
       if (!(ex.id in result)) {
         result[ex.id] = [];
       }
-      result[ex.id].push([currentWo.date, ex.sets]);
+      let sum = new Array(ex.sets[0].length).fill(0);
+      let setCount = 0;
+      ex.sets.forEach((set) => {
+        set.forEach((value, index) => {
+          sum[index] += value;
+        });
+        setCount++;
+      });
+      result[ex.id].push([currentWo.date, [...sum], setCount]);
     });
   });
 
