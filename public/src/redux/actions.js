@@ -94,6 +94,18 @@ export function getWorkouts() {
   })
     .then((response) => response.json())
     .then((workoutData) => {
+      Object.keys(workoutData).forEach((key) => {
+        workoutData[key].date = new Date(workoutData[key].date);
+        // workoutData[key].exercises.forEach((ex, index) => {
+        //   ex.sets.forEach((numberList, nIndex) => {
+        //     numberList.forEach((value, vIndex) => {
+        //       workoutData[key].exercises[index].sets[nIndex][vIndex] = parseInt(
+        //         value
+        //       );
+        //     });
+        //   });
+        // });
+      });
       store.dispatch({ type: SET_WORKOUTS, workoutData });
     });
 }

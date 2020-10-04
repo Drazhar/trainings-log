@@ -4,6 +4,7 @@ import { store } from '../src/redux/store';
 import '../components/workoutForm';
 import { displayForm } from '../src/eventListener/openCloseForms';
 import { getExercises, getWorkouts } from '../src/redux/actions';
+import '../components/logChart';
 
 class LogView extends connect(store)(LitElement) {
   static get properties() {
@@ -36,6 +37,7 @@ class LogView extends connect(store)(LitElement) {
     if (this.exercises !== state.exercises) {
       this.exercises = state.exercises;
       this.exerciseOrder = getExerciseOrder(this.exercises);
+      console.log(this.exerciseOrder);
     }
   }
 
@@ -55,29 +57,35 @@ class LogView extends connect(store)(LitElement) {
         <div class="view-main">
           <table style="width:100%">
             <tbody>
-              ${this.exerciseOrder.map(
-                (exInfo) => html`
-                  <tr>
-                    <td
-                      style="background-color:lightgreen;display:flex;align-items: stretch;justify-content:stretch;height:100px;overflow:hidden"
-                    >
-                      <div style="background-color:blue;flex-grow:1">CHART</div>
-                      <table
-                        style="background-color:red;width:30%;min-width:50px;max-width:150px;overflow:hidden"
+              ${this.exerciseOrder.map((exInfo) => {
+                if (exInfo[2] > 0) {
+                  console.log(this.exercises[exInfo[0]].name);
+                  return html`
+                    <tr>
+                      <td
+                        style="background-color:black;display:flex;align-items: stretch;justify-content:stretch;height:100px;overflow:hidden"
                       >
-                        <tbody>
-                          <tr>
-                            ${this.exercises[exInfo[0]].name}
-                          </tr>
-                          <tr>
-                            ${exInfo[2]}
-                          </tr>
-                        </tbody>
-                      </table>
-                    </td>
-                  </tr>
-                `
-              )}
+                        <log-chart
+                          style="flex-grow:1"
+                          .chartData="${this.exerciseWoData[exInfo[0]]}"
+                        ></log-chart>
+                        <table
+                          style="background-color:red;width:30%;min-width:50px;max-width:150px;overflow:hidden"
+                        >
+                          <tbody>
+                            <tr>
+                              ${this.exercises[exInfo[0]].name}
+                            </tr>
+                            <tr>
+                              ${exInfo[2]}
+                            </tr>
+                          </tbody>
+                        </table>
+                      </td>
+                    </tr>
+                  `;
+                }
+              })}
             </tbody>
           </table>
           <button id="add_workout" @click="${this._addWorkout}">Add +</button>
@@ -98,17 +106,12 @@ function getExerciseOrder(exercises) {
     result.push([key, exercises[key].lastUsed, exercises[key].count]);
   });
   result.sort((a, b) => {
-    // Sort by date first
-    if (a[1] > b[1]) {
-      return 1;
-    } else if (a[1] < b[1]) {
-      return -1;
-    }
-    // Sort by count second
-    if (a[2] < b[2]) {
-      return 1;
-    } else if (a[2] > b[2]) {
-      return -1;
+    for (let i = 1; i < a.length; i++) {
+      if (a[i] < b[i]) {
+        return 1;
+      } else if (a[i] > b[i]) {
+        return -1;
+      }
     }
     return 0;
   });
@@ -128,6 +131,5 @@ function getExerciseWoData(workouts) {
     });
   });
 
-  console.log(result);
   return result;
 }
