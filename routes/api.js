@@ -161,7 +161,6 @@ router.get('/getExercises', requireAuthentication(), (req, res) => {
       if (err) throw err;
 
       let callbackCounter = 0;
-      console.time('test');
       for (let i = 0; i < result_exercise.length; i++) {
         promiseGetDate = new Promise((resolve, reject) => {
           req.db.query(
@@ -206,7 +205,6 @@ router.get('/getExercises', requireAuthentication(), (req, res) => {
           () => {
             callbackCounter++;
             if (callbackCounter === result_exercise.length) {
-              console.timeEnd('test');
               res.status(200).send(result_exercise);
             }
           }
@@ -271,7 +269,8 @@ router.get('/getWorkouts', requireAuthentication(), (req, res) => {
       JOIN training ON workout.id = training.workout_id 
       JOIN training_values ON training_values.workout_id = workout.id 
       AND training_values.ex_number = training.i
-      WHERE workout.user_id = '${req.user.id}';`,
+      WHERE workout.user_id = '${req.user.id}'
+      ORDER BY workout.date DESC;`,
     (err, result) => {
       let returnObject = {};
       if (result.length > 0) {

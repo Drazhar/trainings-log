@@ -10,6 +10,8 @@ class LogView extends connect(store)(LitElement) {
     return {
       workouts: { type: Object },
       exercises: { type: Object },
+      exerciseOrder: { type: Array },
+      exerciseWoData: { type: Object },
     };
   }
 
@@ -29,9 +31,11 @@ class LogView extends connect(store)(LitElement) {
   stateChanged(state) {
     if (this.workouts !== state.workouts) {
       this.workouts = state.workouts;
+      this.exerciseWoData = getExerciseWoData(this.workouts);
     }
     if (this.exercises !== state.exercises) {
       this.exercises = state.exercises;
+      this.exerciseOrder = getExerciseOrder(this.exercises);
     }
   }
 
@@ -49,35 +53,35 @@ class LogView extends connect(store)(LitElement) {
       <div class="view-wrapper">
         <div class="view-header"></div>
         <div class="view-main">
-          <table>
-            ${Object.keys(this.workouts).map((key) => {
-              const current = this.workouts[key];
-              return html`
-                <tr>
-                  ${current.exercises.map((woEx) => {
-                    return html`<td style="color:white;font-size:x-small;">
-                      ${this.exercises[woEx.id].name}
-                    </td>`;
-                  })}
-                  <td>
-                    <button id="editEx+${key}" @click="${this._addExercise}">
-                      edit
-                    </button>
-                  </td>
-                  <td>
-                    <button
-                      id="deleteEx+${key}"
-                      @click="${this._removeExercise}"
+          <table style="width:100%">
+            <tbody>
+              ${this.exerciseOrder.map(
+                (exInfo) => html`
+                  <tr>
+                    <td
+                      style="background-color:lightgreen;display:flex;align-items: stretch;justify-content:stretch;height:100px;overflow:hidden"
                     >
-                      delete
-                    </button>
-                  </td>
-                </tr>
-              `;
-            })}
+                      <div style="background-color:blue;flex-grow:1">CHART</div>
+                      <table
+                        style="background-color:red;width:30%;min-width:50px;max-width:150px;overflow:hidden"
+                      >
+                        <tbody>
+                          <tr>
+                            ${this.exercises[exInfo[0]].name}
+                          </tr>
+                          <tr>
+                            ${exInfo[2]}
+                          </tr>
+                        </tbody>
+                      </table>
+                    </td>
+                  </tr>
+                `
+              )}
+            </tbody>
           </table>
+          <button id="add_workout" @click="${this._addWorkout}">Add +</button>
         </div>
-        <button id="add_workout" @click="${this._addWorkout}">Add +</button>
       </div>
     `;
   }
@@ -87,3 +91,43 @@ class LogView extends connect(store)(LitElement) {
 }
 
 customElements.define('log-view', LogView);
+
+function getExerciseOrder(exercises) {
+  let result = [];
+  Object.keys(exercises).forEach((key) => {
+    result.push([key, exercises[key].lastUsed, exercises[key].count]);
+  });
+  result.sort((a, b) => {
+    // Sort by date first
+    if (a[1] > b[1]) {
+      return 1;
+    } else if (a[1] < b[1]) {
+      return -1;
+    }
+    // Sort by count second
+    if (a[2] < b[2]) {
+      return 1;
+    } else if (a[2] > b[2]) {
+      return -1;
+    }
+    return 0;
+  });
+  return result;
+}
+
+function getExerciseWoData(workouts) {
+  let result = {};
+
+  Object.keys(workouts).forEach((woKey) => {
+    const currentWo = workouts[woKey];
+    currentWo.exercises.forEach((ex) => {
+      if (!(ex.id in result)) {
+        result[ex.id] = [];
+      }
+      result[ex.id].push([currentWo.date, ex.sets]);
+    });
+  });
+
+  console.log(result);
+  return result;
+}
