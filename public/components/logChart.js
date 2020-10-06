@@ -37,37 +37,48 @@ class LogChart extends connect(store)(LitElement) {
       .append('g')
       .attr('transform', `translate(${margin.left},${margin.top})`);
 
-    const today = new Date();
+    const lastDate = new Date(this.chartData[0][0]);
+    const diffToday = Math.floor((new Date() - lastDate) / 86400000);
     const x = scalePow()
       .exponent(0.6)
       .range([0, width])
       .domain([
-        min(this.chartData, (d) => (d[0] - today) / 86400000),
-        max(this.chartData, (d) => (d[0] - today) / 86400000),
+        min(this.chartData, (d) => (d[0] - lastDate) / 86400000),
+        max(this.chartData, (d) => (d[0] - lastDate) / 86400000),
       ]);
     svg
       .append('g')
       .attr('transform', `translate(0,${height})`)
-      .call(axisBottom(x).ticks(4))
+      .call(
+        axisBottom(x)
+          .ticks(3)
+          .tickFormat((d) => {
+            return d - diffToday;
+          })
+      )
       .attr('color', 'RGBA(240,240,240,0.4)');
 
-    let yMax = max(this.chartData, (d) => d[1][0] / d[2]) + 2;
-    if (yMax < 12) {
-      yMax = 12;
+    let yMax = Math.ceil(max(this.chartData, (d) => d[1][0] / d[2]));
+    yMax = Math.ceil(yMax * 1.05);
+    let yMin = Math.floor(min(this.chartData, (d) => d[1][0] / d[2]));
+    if (yMin < 0) {
+      yMin = 0;
+    } else {
+      yMin = Math.floor(yMin * 0.95);
     }
-    const y = scaleLinear().range([height, 0]).domain([0, yMax]);
+    const y = scaleLinear().range([height, 0]).domain([yMin, yMax]);
     svg
       .append('g')
-      .call(axisLeft(y).ticks(4))
+      .call(axisLeft(y).ticks(3))
       .attr('color', 'RGBA(240,240,240,0.4)');
 
     let lines = [];
     const curveData = getCurveChartData(this.chartData, 0);
 
-    for (let i = 0; i < this.chartData[0][1].length; i++) {
+    for (let i = 0; i < 1; i++) {
       lines.push(
         line()
-          .x((d) => x((d[0] - today) / 86400000))
+          .x((d) => x((d[0] - lastDate) / 86400000))
           .y((d) => {
             return y(d[1][i] / d[2]);
           })
@@ -91,7 +102,7 @@ class LogChart extends connect(store)(LitElement) {
       .enter()
       .append('circle')
       .attr('r', 3)
-      .attr('cx', (d) => x((d[0] - today) / 86400000))
+      .attr('cx', (d) => x((d[0] - lastDate) / 86400000))
       .attr('cy', (d) => {
         return y(d[1][0] / d[2]);
       })

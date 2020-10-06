@@ -6,7 +6,6 @@ import { getWeightData } from '../src/redux/actions';
 import {
   select,
   curveBasis,
-  scaleTime,
   scalePow,
   scaleLinear,
   line,
@@ -163,27 +162,28 @@ class WeightView extends connect(store)(LitElement) {
       .append('g')
       .attr('transform', `translate(${margin.left},${margin.top})`);
 
-    // X SCALE AND AXIS
+    // X SCALE
     // const x = scaleTime()
     //   .range([0, width])
     //   .domain([
     //     min(this.weightData, (d) => d.date),
     //     max(this.weightData, (d) => d.date),
     //   ]);
-    const today = new Date();
+
+    const tickCount = 20;
+    const tickCountShow = tickCount - 5;
+    // const lastDate = new Date(this.weightData[this.weightData.length -
+    // 1].date);
+    const lastDate = new Date();
+    const diffToday = Math.floor((new Date() - lastDate) / 86400000);
     const x = scalePow()
-      .exponent(0.4)
+      .exponent(0.5)
       .range([0, width])
       .domain([
-        // min(this.weightData, (d) => (d.date - today) / 1000 / 60 / 60 / 24),
-        -90,
-        max(this.weightData, (d) => (d.date - today) / 86400000),
+        min(this.weightData, (d) => (d.date - lastDate) / 86400000),
+        // max(this.weightData, (d) => (d.date - lastDate) / 86400000),
+        0,
       ]);
-    svg
-      .append('g')
-      .attr('transform', `translate(0,${height})`)
-      .call(axisBottom(x).tickValues([-7, -14, -21, -28]).tickSize(-height))
-      .attr('color', 'lightgrey');
     svg
       .append('defs')
       .append('clipPath')
@@ -192,17 +192,16 @@ class WeightView extends connect(store)(LitElement) {
       .attr('width', width)
       .attr('height', height);
 
-    // Y SCALE AND AXIS
-    const y = scaleLinear()
-      .range([height, 0])
-      .domain([
-        min(this.weightData, (d) => d.weight) - 5,
-        max(this.weightData, (d) => d.weight) + 5,
-      ]);
-    svg
-      .append('g')
-      .call(axisLeft(y).ticks(4).tickSize(-width))
-      .attr('color', 'lightgrey');
+    // Y SCALE
+    let yMax = Math.ceil(max(this.weightData, (d) => d.weight));
+    yMax = Math.ceil(yMax * 1.01);
+    let yMin = Math.floor(min(this.weightData, (d) => d.weight));
+    if (yMin < 0) {
+      yMin = 0;
+    } else {
+      yMin = Math.floor(yMin * 0.99);
+    }
+    const y = scaleLinear().range([height, 0]).domain([yMin, yMax]);
 
     // CREATE DOTS
     svg
@@ -212,7 +211,7 @@ class WeightView extends connect(store)(LitElement) {
       .append('circle')
       .attr('r', 2)
       .attr('cx', (d) => {
-        return x((d.date - today) / 1000 / 60 / 60 / 24);
+        return x((d.date - lastDate) / 86400000);
       })
       .attr('cy', (d) => y(d.weight))
       .attr('fill', `RGBA(240,240,240,0.3)`)
@@ -221,7 +220,7 @@ class WeightView extends connect(store)(LitElement) {
 
     // CREATE LINE
     const lineSmooth = line()
-      .x((d) => x((d.date - today) / 1000 / 60 / 60 / 24))
+      .x((d) => x((d.date - lastDate) / 86400000))
       .y((d) => y(d.weight))
       .curve(curveBasis);
 
@@ -233,6 +232,29 @@ class WeightView extends connect(store)(LitElement) {
       .attr('stroke-width', 3)
       .attr('fill', 'none')
       .attr('stroke-linejoin', 'round');
+
+    // X and Y axis
+    svg
+      .append('g')
+      .attr('transform', `translate(0,${height})`)
+      .call(
+        axisBottom(x)
+          .ticks(tickCount)
+          .tickSize(-height)
+          .tickFormat((d, i) => {
+            if (i >= tickCountShow) {
+              return d - diffToday;
+            } else if (i % 4 === 0) {
+              return d - diffToday;
+            }
+          })
+      )
+      .attr('color', 'lightgrey');
+
+    svg
+      .append('g')
+      .call(axisLeft(y).ticks(4).tickSize(-width))
+      .attr('color', 'lightgrey');
   }
 
   createRenderRoot() {

@@ -166,9 +166,11 @@ router.get('/getExercises', requireAuthentication(), (req, res) => {
           req.db.query(
             `SELECT workout.date AS date FROM workout JOIN training ON workout.id = training.workout_id WHERE workout.user_id = '${req.user.id}' AND exercise_id = '${result_exercise[i].id}' ORDER BY workout.date DESC LIMIT 1;`,
             (err, result_count) => {
-              if (err) throw err;
+              if (err) console.log('Error: ', err);
 
-              result_exercise[i].lastUsed = result_count[0].date;
+              if (result_count.length > 0) {
+                result_exercise[i].lastUsed = result_count[0].date;
+              }
 
               resolve();
             }
@@ -270,8 +272,10 @@ router.get('/getWorkouts', requireAuthentication(), (req, res) => {
       JOIN training_values ON training_values.workout_id = workout.id 
       AND training_values.ex_number = training.i
       WHERE workout.user_id = '${req.user.id}'
-      ORDER BY workout.date DESC;`,
+      ORDER BY workout.date DESC, training_values.set_number ASC;`,
     (err, result) => {
+      if (err) console.log('Error: ', err);
+
       let returnObject = {};
       if (result.length > 0) {
         result.forEach((line) => {
@@ -306,13 +310,9 @@ router.get('/getWorkouts', requireAuthentication(), (req, res) => {
                 returnObject[line.id].exercises[exIndex].sets.push([]);
               }
 
-              try {
-                returnObject[line.id].exercises[exIndex].sets[line.set_number][
-                  line.value_i
-                ] = line.value;
-              } catch (error) {
-                console.log(error);
-              }
+              returnObject[line.id].exercises[exIndex].sets[line.set_number][
+                line.value_i
+              ] = line.value;
             }
           });
         });

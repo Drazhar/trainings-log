@@ -78,7 +78,7 @@ class ExerciseView extends connect(store)(LitElement) {
           ${Object.keys(this.exercises).map((key) => {
             const current = this.exercises[key];
             return html`
-              <tr>
+              <tr style="background-color:${this.exercises[key].color}">
                 <td style="color:white;">${current.name}</td>
                 <td>
                   <button id="editEx+${key}" @click="${this._addExercise}">

@@ -36,9 +36,10 @@ class WorkoutForm extends connect(store)(LitElement) {
   getDefaultExercise() {
     const defaultExerciseId = Object.keys(this.exercises)[0];
     let defaultSets = [];
-    this.exercises[defaultExerciseId].logs.forEach(() => {
-      defaultSets.push([1]);
-    });
+
+    defaultSets.push(
+      new Array(this.exercises[defaultExerciseId].logs.length).fill(1)
+    );
 
     return {
       id: defaultExerciseId,
