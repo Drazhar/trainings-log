@@ -4,11 +4,13 @@ import { store } from '../src/redux/store';
 import '../components/workoutForm';
 import { displayForm } from '../src/eventListener/openCloseForms';
 import { getExercises, getWorkouts } from '../src/redux/actions';
-import '../components/logChart';
+import '../components/logViews/logCharts';
+import '../components/logViews/logTimeline';
 
 class LogView extends connect(store)(LitElement) {
   static get properties() {
     return {
+      view: { type: String },
       workouts: { type: Object },
       exercises: { type: Object },
       exerciseOrder: { type: Array },
@@ -40,54 +42,44 @@ class LogView extends connect(store)(LitElement) {
     }
   }
 
-  _addWorkout(e) {
-    let exId = e.target.id.split('+');
-    let detail = {};
-    if (exId.length > 1) {
-      detail = { detail: { exId: exId[1] } };
-    }
-    document.dispatchEvent(new CustomEvent('open-workout-form', detail));
+  _changeView() {
+    this.view = document.getElementById('viewSetting').value;
   }
 
   render() {
+    let viewHtml = '';
+    switch (this.view) {
+      case 'timeline':
+        viewHtml = html`<log-timeline
+          .workouts="${this.workouts}"
+          .exercises="${this.exercises}"
+        ></log-timeline>`;
+        break;
+      default:
+        viewHtml = html`<log-charts
+          .workouts="${this.workouts}"
+          .exercises="${this.exercises}"
+          .exerciseOrder="${this.exerciseOrder}"
+          .exerciseWoData="${this.exerciseWoData}"
+        ></log-charts>`;
+    }
+
     return html`
       <div class="view-wrapper">
-        <div class="view-header"></div>
+        <div class="view-header">
+          <label for="viewSetting" style="color:white">View: </label>
+          <select
+            name="viewSetting"
+            id="viewSetting"
+            @change="${this._changeView}"
+          >
+            <option value="charts">Charts</option>
+            <option value="timeline">Timeline</option>
+          </select>
+        </div>
         <div class="view-main">
-          <table style="width:100%">
-            <tbody>
-              ${this.exerciseOrder.map((exInfo) => {
-                if (exInfo[2] > 0) {
-                  return html`
-                    <tr>
-                      <td
-                        style="background-color:black;display:flex;align-items: stretch;justify-content:stretch;height:100px;overflow:hidden"
-                      >
-                        <log-chart
-                          style="flex-grow:1"
-                          .chartData="${this.exerciseWoData[exInfo[0]]}"
-                          .color="${this.exercises[exInfo[0]].color}"
-                        ></log-chart>
-                        <table
-                          style="background-color:red;width:30%;min-width:50px;max-width:150px;overflow:hidden"
-                        >
-                          <tbody>
-                            <tr>
-                              ${this.exercises[exInfo[0]].name}
-                            </tr>
-                            <tr>
-                              ${exInfo[2]}
-                            </tr>
-                          </tbody>
-                        </table>
-                      </td>
-                    </tr>
-                  `;
-                }
-              })}
-            </tbody>
-          </table>
-          <button id="add_workout" @click="${this._addWorkout}">Add +</button>
+          ${viewHtml}
+          <button id="add_workout" @click="${addWorkout}">Add +</button>
         </div>
       </div>
     `;
@@ -139,4 +131,13 @@ function getExerciseWoData(workouts) {
   });
 
   return result;
+}
+
+export function addWorkout(e) {
+  let woId = e.target.id.split('+');
+  let detail = {};
+  if (woId.length > 1) {
+    detail = { detail: { woId: woId[1] } };
+  }
+  document.dispatchEvent(new CustomEvent('open-workout-form', detail));
 }

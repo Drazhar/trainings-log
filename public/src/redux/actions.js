@@ -9,6 +9,7 @@ export const SET_EXERCISES = 'SET_EXERCISES';
 export const REMOVE_EXERCISE = 'REMOVE_EXERCISE';
 
 export const SET_WORKOUTS = 'SET_WORKOUTS';
+export const DELETE_WORKOUT = 'DELETE_WORKOUT';
 
 export function updateUserAuthenticated(isUserAuthenticated) {
   return {
@@ -112,4 +113,17 @@ export function getWorkouts() {
 
 export function updateWorkout(workoutData) {
   store.dispatch({ type: SET_WORKOUTS, workoutData });
+}
+
+export function deleteWorkout(workoutId) {
+  store.dispatch({ type: DELETE_WORKOUT, workoutId });
+
+  fetch(`${backendAddress}/api/removeWorkout`, {
+    method: 'POST',
+    credentials: 'include',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ workoutId }),
+  });
 }

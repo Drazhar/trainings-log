@@ -4,6 +4,7 @@ import {
   SET_EXERCISES,
   REMOVE_EXERCISE,
   SET_WORKOUTS,
+  DELETE_WORKOUT,
 } from './actions';
 
 const INITIAL_STATE = {
@@ -39,6 +40,12 @@ export function reducer(state = INITIAL_STATE, action) {
       return Object.assign({}, state, {
         workouts: Object.assign({}, state.workouts, action.workoutData),
       });
+    case DELETE_WORKOUT:
+      let resultRemWo = Object.assign({}, state, {
+        workouts: Object.assign({}, state.workouts),
+      });
+      delete resultRemWo.workouts[action.workoutId];
+      return resultRemWo;
     default:
       return state;
   }

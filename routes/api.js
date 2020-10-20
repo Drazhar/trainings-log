@@ -235,29 +235,36 @@ router.post('/editWorkout', requireAuthentication(), (req, res) => {
     const mood = req.body[workoutId].mood;
 
     req.db.query(
-      `INSERT INTO workout (id, user_id, date, comment, mood) VALUES('${workoutId}', '${userID}', '${date}', '${comment}', '${mood}') AS data ON DUPLICATE KEY UPDATE date=data.date,comment=data.comment,mood=data.mood;`,
-      (error, results) => {
-        if (error) throw error;
+      `DELETE FROM workout WHERE id = '${workoutId}' AND user_id = '${userID}';`,
+      (error) => {
+        if (error) console.log(error);
 
-        req.body[workoutId].exercises.forEach((exercise, exerciseIndex) => {
-          req.db.query(
-            `INSERT INTO training (workout_id, i, exercise_id) VALUES('${workoutId}', ${exerciseIndex}, '${exercise.id}') ON DUPLICATE KEY UPDATE exercise_id=VALUES(exercise_id);`,
-            (error) => {
-              if (error) throw error;
+        req.db.query(
+          `INSERT INTO workout (id, user_id, date, comment, mood) VALUES('${workoutId}', '${userID}', '${date}', '${comment}', '${mood}') AS data ON DUPLICATE KEY UPDATE date=data.date,comment=data.comment,mood=data.mood;`,
+          (error) => {
+            if (error) console.log(error);
 
-              exercise.sets.forEach((set, setIndex) => {
-                set.forEach((value, valueIndex) => {
-                  req.db.query(
-                    `INSERT INTO training_values (workout_id, ex_number, set_number, value_i, value) VALUES('${workoutId}', ${exerciseIndex}, ${setIndex}, ${valueIndex}, ${value}) ON DUPLICATE KEY UPDATE value=VALUES(value);`,
-                    (error) => {
-                      if (error) throw error;
-                    }
-                  );
-                });
-              });
-            }
-          );
-        });
+            req.body[workoutId].exercises.forEach((exercise, exerciseIndex) => {
+              req.db.query(
+                `INSERT INTO training (workout_id, i, exercise_id) VALUES('${workoutId}', ${exerciseIndex}, '${exercise.id}') ON DUPLICATE KEY UPDATE exercise_id=VALUES(exercise_id);`,
+                (error) => {
+                  if (error) console.log(error);
+
+                  exercise.sets.forEach((set, setIndex) => {
+                    set.forEach((value, valueIndex) => {
+                      req.db.query(
+                        `INSERT INTO training_values (workout_id, ex_number, set_number, value_i, value) VALUES('${workoutId}', ${exerciseIndex}, ${setIndex}, ${valueIndex}, ${value}) ON DUPLICATE KEY UPDATE value=VALUES(value);`,
+                        (error) => {
+                          if (error) console.log(error);
+                        }
+                      );
+                    });
+                  });
+                }
+              );
+            });
+          }
+        );
       }
     );
   });
@@ -318,6 +325,16 @@ router.get('/getWorkouts', requireAuthentication(), (req, res) => {
         });
       }
       res.status(200).send(returnObject);
+    }
+  );
+});
+
+router.post('/removeWorkout', requireAuthentication(), (req, res) => {
+  req.db.query(
+    `DELETE FROM workout WHERE id='${req.body.workoutId}' AND user_id='${req.user.id}';`,
+    (error) => {
+      if (error) throw error;
+      res.sendStatus(200);
     }
   );
 });

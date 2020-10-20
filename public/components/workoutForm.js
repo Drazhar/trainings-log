@@ -1,15 +1,18 @@
 import { LitElement, html } from 'lit-element';
 import { connect } from 'pwa-helpers';
 import { store } from '../src/redux/store';
-import { updateWorkout } from '../src/redux/actions';
+import { updateWorkout, deleteWorkout } from '../src/redux/actions';
 import { nanoid } from 'nanoid';
 import { backendAddress } from '../src/env';
+import { getSqlDate } from '../../routes/api_helper/utilities';
 
 class WorkoutForm extends connect(store)(LitElement) {
   static get properties() {
     return {
       currentWorkout: { type: Object },
       exercises: { type: Object },
+      woId: { type: String },
+      newWo: { type: Boolean },
     };
   }
 
@@ -21,11 +24,15 @@ class WorkoutForm extends connect(store)(LitElement) {
 
   connectedCallback() {
     super.connectedCallback();
-    if (this.exId) {
-      this.currentWorkout = store.getState().workouts[this.exId];
+    if (this.woId) {
+      this.currentWorkout = store.getState().workouts[this.woId];
+      this.currentWorkout.date = getSqlDate(this.currentWorkout.date);
+      this.newWo = false;
     } else {
+      this.newWo = true;
+      this.woId = nanoid(8);
       this.currentWorkout = {
-        date: '',
+        date: getSqlDate(new Date()),
         exercises: [],
         comment: '',
         mood: '',
@@ -64,7 +71,7 @@ class WorkoutForm extends connect(store)(LitElement) {
     this.currentWorkout.exercises[id].sets[0] = new Array(
       this.exercises[exerciseId].logs.length
     ).fill(0);
-    console.log(this.currentWorkout);
+    // console.log(this.currentWorkout);
   }
 
   _removeExercise(e) {
@@ -102,7 +109,7 @@ class WorkoutForm extends connect(store)(LitElement) {
 
   _saveWorkout(e) {
     e.preventDefault();
-    console.log(this.currentWorkout);
+    // console.log(this.currentWorkout);
 
     this.currentWorkout.date = document.getElementById('date').value;
     this.currentWorkout.exercises.forEach((exercise, exIndex) => {
@@ -119,9 +126,8 @@ class WorkoutForm extends connect(store)(LitElement) {
     });
     this.requestUpdate(this.currentWorkout, '');
 
-    const id = nanoid(8);
     let reduxObj = {};
-    reduxObj[id] = this.currentWorkout;
+    reduxObj[this.woId] = this.currentWorkout;
 
     updateWorkout(reduxObj);
 
@@ -135,7 +141,14 @@ class WorkoutForm extends connect(store)(LitElement) {
       body: JSON.stringify(reduxObj),
     });
 
-    // this._closeForm();
+    this._closeForm();
+  }
+
+  _deleteWorkout(e) {
+    e.preventDefault();
+    deleteWorkout(this.woId);
+
+    this._closeForm();
   }
 
   render() {
@@ -144,7 +157,12 @@ class WorkoutForm extends connect(store)(LitElement) {
         <!-- Timer oben -->
 
         <form>
-          <input type="date" id="date" name="date" />
+          <input
+            type="date"
+            id="date"
+            name="date"
+            value="${this.currentWorkout.date}"
+          />
 
           ${this.currentWorkout.exercises.map((exercise, exIndex) => {
             return html`
@@ -218,6 +236,11 @@ class WorkoutForm extends connect(store)(LitElement) {
           })}
 
           <button @click="${this._addExercise}">Add Exercise</button>
+          ${this.newWo === false
+            ? html`<button @click="${this._deleteWorkout}">
+                Delete Workout
+              </button>`
+            : html``}
           <div style="height: 70px"></div>
           <input
             type="submit"

@@ -4,7 +4,8 @@ import { store } from '../src/redux/store';
 import { getSqlDate } from '../../routes/api_helper/utilities';
 import {
   select,
-  curveLinear,
+  // curveLinear,
+  curveBasis,
   scalePow,
   scaleLinear,
   line,
@@ -30,6 +31,8 @@ class LogChart extends connect(store)(LitElement) {
     const width = chartArea.clientWidth - margin.left - margin.right;
     const height = 100 - margin.top - margin.bottom;
 
+    const xScaleExp = 1;
+
     const svg = select(chartArea)
       .append('svg')
       .attr('width', width + margin.left + margin.right)
@@ -40,7 +43,7 @@ class LogChart extends connect(store)(LitElement) {
     const lastDate = new Date(this.chartData[0][0]);
     const diffToday = Math.floor((new Date() - lastDate) / 86400000);
     const x = scalePow()
-      .exponent(0.6)
+      .exponent(xScaleExp)
       .range([0, width])
       .domain([
         min(this.chartData, (d) => (d[0] - lastDate) / 86400000),
@@ -56,7 +59,7 @@ class LogChart extends connect(store)(LitElement) {
             return d - diffToday;
           })
       )
-      .attr('color', 'RGBA(240,240,240,0.4)');
+      .attr('color', 'RGBA(110,110,110,1.0)');
 
     let yMax = Math.ceil(max(this.chartData, (d) => d[1][0] / d[2]));
     yMax = Math.ceil(yMax * 1.05);
@@ -70,7 +73,7 @@ class LogChart extends connect(store)(LitElement) {
     svg
       .append('g')
       .call(axisLeft(y).ticks(3))
-      .attr('color', 'RGBA(240,240,240,0.4)');
+      .attr('color', 'RGBA(110,110,110,1.0)');
 
     let lines = [];
     const curveData = getCurveChartData(this.chartData, 0);
@@ -82,7 +85,7 @@ class LogChart extends connect(store)(LitElement) {
           .y((d) => {
             return y(d[1][i] / d[2]);
           })
-          .curve(curveLinear)
+          .curve(curveBasis)
       );
 
       svg
@@ -101,12 +104,12 @@ class LogChart extends connect(store)(LitElement) {
       .data(this.chartData)
       .enter()
       .append('circle')
-      .attr('r', 3)
+      .attr('r', 2)
       .attr('cx', (d) => x((d[0] - lastDate) / 86400000))
       .attr('cy', (d) => {
         return y(d[1][0] / d[2]);
       })
-      .attr('fill', `RGBA(240,240,240,0.6)`)
+      .attr('fill', `RGBA(255,255,255,0.5)`)
       .append('svg:title');
   }
 
