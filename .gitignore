@@ -1,6 +1,8 @@
 node_modules
 Inspiration
 static
+data
 
 *package-lock.json
 *.private.*
+docker-compose.yml
