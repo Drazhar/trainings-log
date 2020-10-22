@@ -16,6 +16,7 @@ class logCharts extends connect(store)(LitElement) {
   connectedCallback() {
     super.connectedCallback();
     console.log(this.exerciseWoData);
+    console.log(this.workouts);
   }
 
   render() {

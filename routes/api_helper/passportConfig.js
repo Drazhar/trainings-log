@@ -4,6 +4,7 @@ const bcrypt = require('bcrypt');
 const { hashPassword } = require('./password');
 const { getTodayDate } = require('./utilities');
 const { nanoid } = require('nanoid');
+const connectionPool = require('../../src/postgreSQL');
 
 module.exports = (passport) => {
   passport.serializeUser((user, done) => {
@@ -11,10 +12,14 @@ module.exports = (passport) => {
   });
 
   passport.deserializeUser((userID, done) => {
-    require('../../src/mySQL').query(
-      `SELECT * FROM user WHERE id = '${userID}'`,
-      (err, rows) => {
-        done(err, rows[0]);
+    connectionPool.query(
+      `SELECT * FROM "user_account" WHERE "user_id" = '${userID}'`,
+      (err, result) => {
+        done(err, {
+          email: result.rows[0].email,
+          password: result.rows[0].pass,
+          id: result.rows[0].user_id,
+        });
       }
     );
   });
@@ -29,7 +34,7 @@ module.exports = (passport) => {
       },
       (req, email, password, done) => {
         req.db.query(
-          `SELECT * FROM user WHERE email = '${email}'`,
+          `SELECT * FROM user_account WHERE email = '${email}'`,
           (err, rows) => {
             if (err) return done(err);
             if (rows.length) {
@@ -37,8 +42,9 @@ module.exports = (passport) => {
             } else {
               const userID = nanoid(8);
               hashPassword(password).then((hashedPass) => {
-                const insertQuery = `INSERT INTO user ( id, email, password, date_joined ) VALUES ('${userID}', '${email}','${hashedPass}', '${getTodayDate()}')`;
-                req.db.query(insertQuery, (err, rows) => {
+                const insertQuery = `INSERT INTO user_account ( user_id, email, pass, date_joined ) VALUES ('${userID}', '${email}','${hashedPass}', '${getTodayDate()}')`;
+                req.db.query(insertQuery, (err) => {
+                  if (err) console.log('Error local signup: ', err);
                   return done(null, { userID });
                 });
               });
@@ -59,20 +65,22 @@ module.exports = (passport) => {
       },
       (req, email, password, done) => {
         req.db.query(
-          `SELECT * FROM user WHERE email = '${email}'`,
-          (err, rows) => {
+          `SELECT * FROM user_account WHERE email = '${email}'`,
+          (err, result) => {
             if (err) return done(err);
-            if (!rows.length) {
+            if (!result.rows.length) {
               return done(null, false, { message: 'user not found' });
             }
 
-            bcrypt.compare(password, rows[0].password).then((result) => {
-              if (result) {
-                return done(null, { userID: rows[0].id });
-              } else {
-                return done(null, false, { message: 'wrong password' });
-              }
-            });
+            bcrypt
+              .compare(password, result.rows[0].pass)
+              .then((bcryptResult) => {
+                if (bcryptResult) {
+                  return done(null, { userID: result.rows[0].user_id });
+                } else {
+                  return done(null, false, { message: 'wrong password' });
+                }
+              });
           }
         );
       }

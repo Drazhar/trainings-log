@@ -43,7 +43,8 @@ export function getWeightData(fromDate, toDate) {
     .then((response) => response.json())
     .then((weightData) => {
       weightData.forEach((item, index) => {
-        weightData[index].date = new Date(item.date);
+        weightData[index].log_date = new Date(item.log_date);
+        weightData[index].weight = parseFloat(weightData[index].weight);
       });
 
       store.dispatch({ type: GET_WEIGHT_DATA, weightData });
