@@ -135,7 +135,7 @@ router.post('/editExercise', requireAuthentication(), (req, res) => {
     const description = req.body[exerciseId].description;
 
     req.db.query(
-      `INSERT INTO exercise (exercise_id, exercise_name, user_id, color, description) VALUES('${exerciseId}', '${name}', '${userID}', '${color}', '${description}') ON DUPLICATE KEY UPDATE exercise_name=VALUES(exercise_name),user_id=VALUES(user_id),color=VALUES(color),description=VALUES(description);`,
+      `INSERT INTO exercise (exercise_id, exercise_name, user_id, color, description) VALUES('${exerciseId}', '${name}', '${userID}', '${color}', '${description}') ON CONFLICT (exercise_id) DO UPDATE SET exercise_name='${name}',user_id='${userID}',color='${color}',description='${description}';`,
       (error) => {
         if (error) throw error;
 
@@ -145,7 +145,7 @@ router.post('/editExercise', requireAuthentication(), (req, res) => {
           }
 
           req.db.query(
-            `INSERT INTO log_table (exercise_id, i, name, unit) VALUES('${exerciseId}', ${index}, '${entry.name}', '${entry.unit}') ON DUPLICATE KEY UPDATE name=VALUES(name),unit=VALUES(unit);`,
+            `INSERT INTO log_table (exercise_id, i, log_name, unit) VALUES('${exerciseId}', ${index}, '${entry.name}', '${entry.unit}') ON CONFLICT (exercise_id, i) DO UPDATE SET log_name='${entry.name}',unit='${entry.unit}';`,
             (error) => {
               if (error) throw error;
             }
@@ -159,20 +159,21 @@ router.post('/editExercise', requireAuthentication(), (req, res) => {
 
 router.get('/getExercises', requireAuthentication(), (req, res) => {
   req.db.query(
-    `SELECT * FROM exercise WHERE user_id = '${req.user.id}';`,
+    `SELECT exercise_id AS "id", exercise_name AS "name", color, description FROM exercise WHERE user_id = '${req.user.id}';`,
     (err, result_exercise) => {
-      if (err) throw err;
+      if (err) console.log('Error at api call getExercises: ', err);
 
       let callbackCounter = 0;
-      for (let i = 0; i < result_exercise.length; i++) {
+      for (let i = 0; i < result_exercise.rows.length; i++) {
         promiseGetDate = new Promise((resolve, reject) => {
           req.db.query(
-            `SELECT workout.workout_date AS date FROM workout JOIN training ON workout.workout_id = training.workout_id WHERE workout.user_id = '${req.user.id}' AND exercise_id = '${result_exercise[i].id}' ORDER BY workout.workout_date DESC LIMIT 1;`,
+            `SELECT workout.workout_date FROM workout JOIN training ON workout.workout_id = training.workout_id WHERE workout.user_id = '${req.user.id}' AND exercise_id = '${result_exercise.rows[i].exercise_id}' ORDER BY workout.workout_date DESC LIMIT 1;`,
             (err, result_count) => {
               if (err) console.log('Error: ', err);
 
-              if (result_count.length > 0) {
-                result_exercise[i].lastUsed = result_count[0].date;
+              if (result_count.rows.length > 0) {
+                result_exercise.rows[i].lastUsed =
+                  result_count.rows[0].workout_date;
               }
 
               resolve();
@@ -182,11 +183,11 @@ router.get('/getExercises', requireAuthentication(), (req, res) => {
 
         promiseGetCount = new Promise((resolve, reject) => {
           req.db.query(
-            `SELECT COUNT(training.exercise_id) AS count FROM workout JOIN training ON workout.workout_id = training.workout_id WHERE workout.user_id = '${req.user.id}' AND exercise_id = '${result_exercise[i].id}';`,
+            `SELECT COUNT(training.exercise_id) AS count FROM workout JOIN training ON workout.workout_id = training.workout_id WHERE workout.user_id = '${req.user.id}' AND exercise_id = '${result_exercise.rows[i].id}';`,
             (err, result_count) => {
               if (err) throw err;
 
-              result_exercise[i].count = result_count[0].count;
+              result_exercise.rows[i].count = result_count.rows[0].count;
 
               resolve();
             }
@@ -195,11 +196,16 @@ router.get('/getExercises', requireAuthentication(), (req, res) => {
 
         promiseGetLogs = new Promise((resolve, reject) => {
           req.db.query(
-            `SELECT log_name, unit FROM log_table WHERE exercise_id='${result_exercise[i].id}' ORDER BY i ASC;`,
+            `SELECT log_name AS name, unit FROM log_table WHERE exercise_id='${result_exercise.rows[i].id}' ORDER BY i ASC;`,
             (err, result_logs) => {
               if (err) throw err;
 
-              result_exercise[i].logs = result_logs;
+              result_exercise.rows[i].logs = result_logs.rows.map((item) => {
+                return {
+                  name: item.name,
+                  unit: item.unit != 'null' ? item.unit : '',
+                };
+              });
 
               resolve();
             }
@@ -209,8 +215,8 @@ router.get('/getExercises', requireAuthentication(), (req, res) => {
         Promise.all([promiseGetDate, promiseGetCount, promiseGetLogs]).then(
           () => {
             callbackCounter++;
-            if (callbackCounter === result_exercise.length) {
-              res.status(200).send(result_exercise);
+            if (callbackCounter === result_exercise.rows.length) {
+              res.status(200).send(result_exercise.rows);
             }
           }
         );
@@ -289,7 +295,6 @@ router.get('/getWorkouts', requireAuthentication(), (req, res) => {
       let returnObject = {};
       if (result.rows.length > 0) {
         result.rows.forEach((line) => {
-          // console.log(line);
           if (!(`${line.workout_id}` in returnObject)) {
             returnObject[line.workout_id] = {
               date: line.workout_date,
@@ -301,7 +306,7 @@ router.get('/getWorkouts', requireAuthentication(), (req, res) => {
 
           let keyExists = false;
           returnObject[line.workout_id].exercises.forEach((exercise) => {
-            if (exercise.exercise_id == `${line.exercise_id}`) {
+            if (exercise.id == `${line.exercise_id}`) {
               keyExists = true;
             }
           });
@@ -315,7 +320,7 @@ router.get('/getWorkouts', requireAuthentication(), (req, res) => {
 
           returnObject[line.workout_id].exercises.forEach(
             (exercise, exIndex) => {
-              if (exercise.workout_id == `${line.exercise_id}`) {
+              if (exercise.id == `${line.exercise_id}`) {
                 if (
                   !returnObject[line.workout_id].exercises[exIndex].sets[
                     line.set_number

@@ -22,8 +22,8 @@ class LogView extends connect(store)(LitElement) {
     super.connectedCallback();
     document.addEventListener('open-workout-form', displayForm);
     // document.dispatchEvent(new CustomEvent('open-workout-form'));
-    getWorkouts();
     getExercises();
+    getWorkouts();
   }
 
   disconnectedCallback() {

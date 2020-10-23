@@ -30,7 +30,7 @@ class WorkoutForm extends connect(store)(LitElement) {
       this.newWo = false;
     } else {
       this.newWo = true;
-      this.woId = nanoid(8);
+      this.woId = nanoid(10);
       this.currentWorkout = {
         date: getSqlDate(new Date()),
         exercises: [],
