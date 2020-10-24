@@ -119,16 +119,19 @@ class WeightView extends connect(store)(LitElement) {
             ${[...this.weightData].reverse().map((entry) => {
               return html`<tr>
                 <td>
-                  ${entry.date.getDate() < 10
-                    ? '0' + entry.date.getDate()
-                    : entry.date.getDate()}.${entry.date.getMonth() + 1 < 10
-                    ? '0' + (entry.date.getMonth() + 1)
-                    : entry.date.getMonth() + 1}.${entry.date.getFullYear()}
+                  ${entry.log_date.getDate() < 10
+                    ? '0' + entry.log_date.getDate()
+                    : entry.log_date.getDate()}.${entry.log_date.getMonth() +
+                    1 <
+                  10
+                    ? '0' + (entry.log_date.getMonth() + 1)
+                    : entry.log_date.getMonth() +
+                      1}.${entry.log_date.getFullYear()}
                 </td>
                 <td>${entry.weight}</td>
                 <td>
                   <button
-                    id="rem_${getSqlDate(entry.date)}"
+                    id="rem_${getSqlDate(entry.log_date)}"
                     @click="${this._handleRemove}"
                   >
                     Remove
@@ -182,7 +185,7 @@ class WeightView extends connect(store)(LitElement) {
       .domain([
         // min(this.weightData, (d) => (d.date - lastDate) / 86400000),
         -365,
-        max(this.weightData, (d) => (d.date - lastDate) / 86400000),
+        max(this.weightData, (d) => (d.log_date - lastDate) / 86400000),
         // 0,
       ]);
     svg
@@ -212,7 +215,7 @@ class WeightView extends connect(store)(LitElement) {
       .append('circle')
       .attr('r', 2)
       .attr('cx', (d) => {
-        return x((d.date - lastDate) / 86400000);
+        return x((d.log_date - lastDate) / 86400000);
       })
       .attr('cy', (d) => y(d.weight))
       .attr('fill', `RGBA(240,240,240,0.3)`)
@@ -221,7 +224,7 @@ class WeightView extends connect(store)(LitElement) {
 
     // CREATE LINE
     const lineSmooth = line()
-      .x((d) => x((d.date - lastDate) / 86400000))
+      .x((d) => x((d.log_date - lastDate) / 86400000))
       .y((d) => y(d.weight))
       .curve(curveBasis);
 

@@ -8,7 +8,7 @@ function getMovingAverage(inputArray, days) {
     let sum = inputArray[i].weight;
     for (let j = i - 1; j >= 0; j--) {
       const daysDifference =
-        (inputArray[i].date - inputArray[j].date) / msPerDay;
+        (inputArray[i].log_date - inputArray[j].log_date) / msPerDay;
       if (daysDifference <= days) {
         count++;
         sum += inputArray[j].weight;
@@ -19,7 +19,7 @@ function getMovingAverage(inputArray, days) {
 
     for (let j = i + 1; j < inputArray.length; j++) {
       const daysDifference =
-        (inputArray[j].date - inputArray[i].date) / msPerDay;
+        (inputArray[j].log_date - inputArray[i].log_date) / msPerDay;
       if (daysDifference <= days) {
         count++;
         sum += inputArray[j].weight;
@@ -27,7 +27,11 @@ function getMovingAverage(inputArray, days) {
         break;
       }
     }
-    movingAverage.push({ date: inputArray[i].date, weight: sum / count });
+
+    movingAverage.push({
+      log_date: inputArray[i].log_date,
+      weight: sum / count,
+    });
   }
 
   return movingAverage;

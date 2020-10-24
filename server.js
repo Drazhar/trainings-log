@@ -1,9 +1,9 @@
 // Imports
 const express = require('express');
 const session = require('express-session');
-const MySQLStore = require('express-mysql-session')(session);
+const pgSession = require('connect-pg-simple')(session);
 const passport = require('passport');
-const connectionPool = require('./src/mySQL');
+const connectionPool = require('./src/postgreSQL');
 const path = require('path');
 
 require('./routes/api_helper/passportConfig')(passport);
@@ -15,15 +15,15 @@ const port = process.env.PORT || 3000;
 // Static routes
 app.use(express.static('static'));
 
-// Session Store
-const sessionStore = new MySQLStore({}, connectionPool);
-
 // Middleware
 app.use(
   session({
     key: 'userIdentifier',
     secret: 'secret',
-    store: sessionStore,
+    store: new pgSession({
+      pool: connectionPool,
+      tableName: 'user_session',
+    }),
     resave: false,
     saveUninitialized: false, // Save even if not registered
   })

@@ -87,7 +87,7 @@ router.post('/addWeight', requireAuthentication(), (req, res) => {
   const date = req.body.date;
 
   req.db.query(
-    `INSERT INTO weight (user_id, date, weight) VALUES('${userID}', '${date}', ${weight}) ON DUPLICATE KEY UPDATE weight=VALUES(weight);`,
+    `INSERT INTO weight (user_id, log_date, weight) VALUES('${userID}', '${date}', ${weight}) ON CONFLICT (user_id, log_date) DO UPDATE SET weight = ${weight};`,
     (error) => {
       if (error) throw error;
       res.sendStatus(200);
@@ -100,7 +100,7 @@ router.post('/removeWeight', requireAuthentication(), (req, res) => {
   const date = req.body.date;
 
   req.db.query(
-    `DELETE FROM weight WHERE user_id='${userId}' AND date='${date}';`,
+    `DELETE FROM weight WHERE user_id='${userId}' AND log_date='${date}';`,
     (error) => {
       if (error) throw error;
       res.sendStatus(200);
@@ -113,15 +113,15 @@ router.get('/getWeight', requireAuthentication(), (req, res) => {
   let toDateString = '';
 
   if ('fromDate' in req.query) {
-    fromDateString = ` date >= '${req.query.fromDate}' AND`;
+    fromDateString = ` log_date >= '${req.query.fromDate}' AND`;
   }
   if ('toDate' in req.query) {
-    toDateString = ` date <= '${req.query.toDate}' AND`;
+    toDateString = ` log_date <= '${req.query.toDate}' AND`;
   }
   req.db.query(
-    `SELECT date, weight FROM weight WHERE${fromDateString}${toDateString} user_id = '${req.user.id}';`,
+    `SELECT log_date, weight FROM weight WHERE${fromDateString}${toDateString} user_id = '${req.user.id}';`,
     (err, result) => {
-      res.status(200).send(result);
+      res.status(200).send(result.rows);
     }
   );
 });
@@ -135,7 +135,7 @@ router.post('/editExercise', requireAuthentication(), (req, res) => {
     const description = req.body[exerciseId].description;
 
     req.db.query(
-      `INSERT INTO exercise (id, name, user_id, color, description) VALUES('${exerciseId}', '${name}', '${userID}', '${color}', '${description}') ON DUPLICATE KEY UPDATE name=VALUES(name),user_id=VALUES(user_id),color=VALUES(color),description=VALUES(description);`,
+      `INSERT INTO exercise (exercise_id, exercise_name, user_id, color, description) VALUES('${exerciseId}', '${name}', '${userID}', '${color}', '${description}') ON CONFLICT (exercise_id) DO UPDATE SET exercise_name='${name}',user_id='${userID}',color='${color}',description='${description}';`,
       (error) => {
         if (error) throw error;
 
@@ -145,7 +145,7 @@ router.post('/editExercise', requireAuthentication(), (req, res) => {
           }
 
           req.db.query(
-            `INSERT INTO log_table (exercise_id, i, name, unit) VALUES('${exerciseId}', ${index}, '${entry.name}', '${entry.unit}') ON DUPLICATE KEY UPDATE name=VALUES(name),unit=VALUES(unit);`,
+            `INSERT INTO log_table (exercise_id, i, log_name, unit) VALUES('${exerciseId}', ${index}, '${entry.name}', '${entry.unit}') ON CONFLICT (exercise_id, i) DO UPDATE SET log_name='${entry.name}',unit='${entry.unit}';`,
             (error) => {
               if (error) throw error;
             }
@@ -159,20 +159,21 @@ router.post('/editExercise', requireAuthentication(), (req, res) => {
 
 router.get('/getExercises', requireAuthentication(), (req, res) => {
   req.db.query(
-    `SELECT * FROM exercise WHERE user_id = '${req.user.id}';`,
+    `SELECT exercise_id AS "id", exercise_name AS "name", color, description FROM exercise WHERE user_id = '${req.user.id}';`,
     (err, result_exercise) => {
-      if (err) throw err;
+      if (err) console.log('Error at api call getExercises: ', err);
 
       let callbackCounter = 0;
-      for (let i = 0; i < result_exercise.length; i++) {
+      for (let i = 0; i < result_exercise.rows.length; i++) {
         promiseGetDate = new Promise((resolve, reject) => {
           req.db.query(
-            `SELECT workout.date AS date FROM workout JOIN training ON workout.id = training.workout_id WHERE workout.user_id = '${req.user.id}' AND exercise_id = '${result_exercise[i].id}' ORDER BY workout.date DESC LIMIT 1;`,
+            `SELECT workout.workout_date FROM workout JOIN training ON workout.workout_id = training.workout_id WHERE workout.user_id = '${req.user.id}' AND exercise_id = '${result_exercise.rows[i].exercise_id}' ORDER BY workout.workout_date DESC LIMIT 1;`,
             (err, result_count) => {
               if (err) console.log('Error: ', err);
 
-              if (result_count.length > 0) {
-                result_exercise[i].lastUsed = result_count[0].date;
+              if (result_count.rows.length > 0) {
+                result_exercise.rows[i].lastUsed =
+                  result_count.rows[0].workout_date;
               }
 
               resolve();
@@ -182,11 +183,11 @@ router.get('/getExercises', requireAuthentication(), (req, res) => {
 
         promiseGetCount = new Promise((resolve, reject) => {
           req.db.query(
-            `SELECT COUNT(training.exercise_id) AS count FROM workout JOIN training ON workout.id = training.workout_id WHERE workout.user_id = '${req.user.id}' AND exercise_id = '${result_exercise[i].id}';`,
+            `SELECT COUNT(training.exercise_id) AS count FROM workout JOIN training ON workout.workout_id = training.workout_id WHERE workout.user_id = '${req.user.id}' AND exercise_id = '${result_exercise.rows[i].id}';`,
             (err, result_count) => {
               if (err) throw err;
 
-              result_exercise[i].count = result_count[0].count;
+              result_exercise.rows[i].count = result_count.rows[0].count;
 
               resolve();
             }
@@ -195,11 +196,16 @@ router.get('/getExercises', requireAuthentication(), (req, res) => {
 
         promiseGetLogs = new Promise((resolve, reject) => {
           req.db.query(
-            `SELECT name, unit FROM log_table WHERE exercise_id='${result_exercise[i].id}' ORDER BY i ASC;`,
+            `SELECT log_name AS name, unit FROM log_table WHERE exercise_id='${result_exercise.rows[i].id}' ORDER BY i ASC;`,
             (err, result_logs) => {
               if (err) throw err;
 
-              result_exercise[i].logs = result_logs;
+              result_exercise.rows[i].logs = result_logs.rows.map((item) => {
+                return {
+                  name: item.name,
+                  unit: item.unit != 'null' ? item.unit : '',
+                };
+              });
 
               resolve();
             }
@@ -209,8 +215,8 @@ router.get('/getExercises', requireAuthentication(), (req, res) => {
         Promise.all([promiseGetDate, promiseGetCount, promiseGetLogs]).then(
           () => {
             callbackCounter++;
-            if (callbackCounter === result_exercise.length) {
-              res.status(200).send(result_exercise);
+            if (callbackCounter === result_exercise.rows.length) {
+              res.status(200).send(result_exercise.rows);
             }
           }
         );
@@ -222,7 +228,7 @@ router.get('/getExercises', requireAuthentication(), (req, res) => {
 router.post('/removeExercise', requireAuthentication(), (req, res) => {
   const userId = req.user.id;
   req.db.query(
-    `DELETE FROM exercise WHERE id='${req.body.id}' AND user_id='${userId}';`,
+    `DELETE FROM exercise WHERE exercise_id='${req.body.id}' AND user_id='${userId}';`,
     (error) => {
       if (error) throw error;
       res.sendStatus(200);
@@ -238,12 +244,12 @@ router.post('/editWorkout', requireAuthentication(), (req, res) => {
     const mood = req.body[workoutId].mood;
 
     req.db.query(
-      `DELETE FROM workout WHERE id = '${workoutId}' AND user_id = '${userID}';`,
+      `DELETE FROM workout WHERE workout_id = '${workoutId}' AND user_id = '${userID}';`,
       (error) => {
         if (error) console.log(error);
 
         req.db.query(
-          `INSERT INTO workout (id, user_id, date, comment, mood) VALUES('${workoutId}', '${userID}', '${date}', '${comment}', '${mood}') AS data ON DUPLICATE KEY UPDATE date=data.date,comment=data.comment,mood=data.mood;`,
+          `INSERT INTO workout (workout_id, user_id, workout_date, comment, mood) VALUES('${workoutId}', '${userID}', '${date}', '${comment}', '${mood}') AS data ON DUPLICATE KEY UPDATE workout_date=data.workout_date,comment=data.comment,mood=data.mood;`,
           (error) => {
             if (error) console.log(error);
 
@@ -276,55 +282,61 @@ router.post('/editWorkout', requireAuthentication(), (req, res) => {
 
 router.get('/getWorkouts', requireAuthentication(), (req, res) => {
   req.db.query(
-    `SELECT workout.id, workout.date, workout.comment, workout.mood, training.i, training.exercise_id, training_values.set_number, training_values.value_i, training_values.value 
-      FROM workout 
-      JOIN training ON workout.id = training.workout_id 
-      JOIN training_values ON training_values.workout_id = workout.id 
+    `SELECT workout.workout_id, workout.workout_date, workout.user_comment, workout.mood, training.i, training.exercise_id, training_values.set_number, training_values.value_i, training_values.value 
+      FROM workout
+      JOIN training ON workout.workout_id = training.workout_id 
+      JOIN training_values ON training_values.workout_id = workout.workout_id 
       AND training_values.ex_number = training.i
       WHERE workout.user_id = '${req.user.id}'
-      ORDER BY workout.date DESC, training_values.set_number ASC;`,
+      ORDER BY workout.workout_date DESC, training_values.set_number ASC;`,
     (err, result) => {
       if (err) console.log('Error: ', err);
 
       let returnObject = {};
-      if (result.length > 0) {
-        result.forEach((line) => {
-          if (!(`${line.id}` in returnObject)) {
-            returnObject[line.id] = {
-              date: line.date,
-              comment: line.comment,
+      if (result.rows.length > 0) {
+        result.rows.forEach((line) => {
+          if (!(`${line.workout_id}` in returnObject)) {
+            returnObject[line.workout_id] = {
+              date: line.workout_date,
+              comment: line.user_comment,
               mood: line.mood,
               exercises: [],
             };
           }
 
           let keyExists = false;
-          returnObject[line.id].exercises.forEach((exercise) => {
+          returnObject[line.workout_id].exercises.forEach((exercise) => {
             if (exercise.id == `${line.exercise_id}`) {
               keyExists = true;
             }
           });
           if (!keyExists) {
-            returnObject[line.id].exercises.push({
+            returnObject[line.workout_id].exercises.push({
               id: line.exercise_id,
               // mood: line.exerciseMood,
               sets: [],
             });
           }
 
-          returnObject[line.id].exercises.forEach((exercise, exIndex) => {
-            if (exercise.id == `${line.exercise_id}`) {
-              if (
-                !returnObject[line.id].exercises[exIndex].sets[line.set_number]
-              ) {
-                returnObject[line.id].exercises[exIndex].sets.push([]);
-              }
+          returnObject[line.workout_id].exercises.forEach(
+            (exercise, exIndex) => {
+              if (exercise.id == `${line.exercise_id}`) {
+                if (
+                  !returnObject[line.workout_id].exercises[exIndex].sets[
+                    line.set_number
+                  ]
+                ) {
+                  returnObject[line.workout_id].exercises[exIndex].sets.push(
+                    []
+                  );
+                }
 
-              returnObject[line.id].exercises[exIndex].sets[line.set_number][
-                line.value_i
-              ] = line.value;
+                returnObject[line.workout_id].exercises[exIndex].sets[
+                  line.set_number
+                ][line.value_i] = line.value;
+              }
             }
-          });
+          );
         });
       }
       res.status(200).send(returnObject);
