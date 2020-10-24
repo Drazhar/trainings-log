@@ -1,7 +1,7 @@
 // Imports
 const express = require('express');
 const session = require('express-session');
-const pgSession = require('express-pg-session')(session);
+const pgSession = require('connect-pg-simple')(session);
 const passport = require('passport');
 const connectionPool = require('./src/postgreSQL');
 const path = require('path');
@@ -15,18 +15,15 @@ const port = process.env.PORT || 3000;
 // Static routes
 app.use(express.static('static'));
 
-// Session Store
-const sessionStore = new pgSession({
-  pool: connectionPool,
-  tableName: 'user_session',
-});
-
 // Middleware
 app.use(
   session({
     key: 'userIdentifier',
     secret: 'secret',
-    store: sessionStore,
+    store: new pgSession({
+      pool: connectionPool,
+      tableName: 'user_session',
+    }),
     resave: false,
     saveUninitialized: false, // Save even if not registered
   })

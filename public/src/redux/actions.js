@@ -78,7 +78,7 @@ export function getExercises() {
           color: item.color,
           description: item.description,
           logs: item.logs,
-          count: item.count,
+          count: parseInt(item.count),
           lastUsed: new Date(item.lastUsed),
         };
       });
@@ -98,15 +98,15 @@ export function getWorkouts() {
     .then((workoutData) => {
       Object.keys(workoutData).forEach((key) => {
         workoutData[key].date = new Date(workoutData[key].date);
-        // workoutData[key].exercises.forEach((ex, index) => {
-        //   ex.sets.forEach((numberList, nIndex) => {
-        //     numberList.forEach((value, vIndex) => {
-        //       workoutData[key].exercises[index].sets[nIndex][vIndex] = parseInt(
-        //         value
-        //       );
-        //     });
-        //   });
-        // });
+        workoutData[key].exercises.forEach((ex, index) => {
+          ex.sets.forEach((numberList, nIndex) => {
+            numberList.forEach((value, vIndex) => {
+              workoutData[key].exercises[index].sets[nIndex][vIndex] = parseInt(
+                value
+              );
+            });
+          });
+        });
       });
       store.dispatch({ type: SET_WORKOUTS, workoutData });
     });

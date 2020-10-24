@@ -115,7 +115,6 @@ function getExerciseWoData(workouts) {
   Object.keys(workouts).forEach((woKey) => {
     const currentWo = workouts[woKey];
     currentWo.exercises.forEach((ex) => {
-      console.log(ex);
       if (!(ex.id in result)) {
         result[ex.id] = [];
       }

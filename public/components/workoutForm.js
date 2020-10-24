@@ -38,6 +38,7 @@ class WorkoutForm extends connect(store)(LitElement) {
         mood: '',
       };
     }
+    console.log(this.currentWorkout);
   }
 
   getDefaultExercise() {
