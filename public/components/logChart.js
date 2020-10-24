@@ -23,7 +23,7 @@ class LogChart extends connect(store)(LitElement) {
     };
   }
 
-  firstUpdated() {
+  updated() {
     const chartArea = this.shadowRoot.getElementById('chart');
     chartArea.innerHTML = ''; // delete old chart
 

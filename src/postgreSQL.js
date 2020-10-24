@@ -1,16 +1,17 @@
 const { Pool } = require('pg');
-const private = require('./variables.private.js');
 
 // Connect to database
 const connectionPool = (pool = new Pool({
-  host: 'localhost',
-  port: 5432,
+  host: process.env.DB_ADDRESS,
+  port: process.env.DB_PORT,
   ssl: false,
   connectionLimit: 10,
-  user: private.user,
-  password: private.password,
-  database: private.database,
+  user: process.env.DB_USERNAME,
+  password: process.env.DB_PASS,
+  database: process.env.DB_NAME,
   maxUses: 7500,
 }));
 
 module.exports = connectionPool;
+
+console.log(process.env.PORT);

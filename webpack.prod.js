@@ -16,6 +16,10 @@ module.exports = {
     new HtmlWebpackPlugin({
       template: './public/index.html',
     }),
+    ,
+    new webpack.DefinePlugin({
+      'process.env.BACKEND_ADDRESS': JSON.stringify('http://192.168.0.4:80'),
+    }),
   ],
   module: {
     rules: [

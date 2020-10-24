@@ -30,14 +30,16 @@ app.use(
 );
 app.use(express.json({ limit: '100kb' }));
 app.use((req, res, next) => {
-  // IMPORTANT: Only needed for cross site access!
-  res.header('Access-Control-Allow-Origin', 'http://localhost:8080');
+  const allowedOrigins = ['http://localhost:8080'];
+  const origin = req.headers.origin;
+  if (allowedOrigins.includes(origin)) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+  }
   res.header('Access-Control-Allow-Credentials', 'true');
   res.header(
     'Access-Control-Allow-Headers',
-    'Origin, X-Requested-With, Content-Type, Accept'
+    'Origin, X-Requested-With, content-type, Accept'
   );
-  // /\-----/\
   req.db = connectionPool; // pass the database connection pool to each request
   next();
 });

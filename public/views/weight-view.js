@@ -69,7 +69,7 @@ class WeightView extends connect(store)(LitElement) {
   stateChanged(state) {
     if (this.weightData !== state.weightData) {
       this.weightData = state.weightData;
-      this.movingAverage = getMovingAverage(this.weightData, 3);
+      this.movingAverage = getMovingAverage(this.weightData, 5);
     }
   }
 
@@ -185,8 +185,7 @@ class WeightView extends connect(store)(LitElement) {
       .domain([
         // min(this.weightData, (d) => (d.date - lastDate) / 86400000),
         -365,
-        max(this.weightData, (d) => (d.log_date - lastDate) / 86400000),
-        // 0,
+        max(this.weightData, (d) => (d.log_date - lastDate) / 86400000) + 20,
       ]);
     svg
       .append('defs')
