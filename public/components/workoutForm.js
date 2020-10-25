@@ -5,6 +5,7 @@ import { updateWorkout, deleteWorkout } from '../src/redux/actions';
 import { nanoid } from 'nanoid';
 import { backendAddress } from '../src/env';
 import { getSqlDate } from '../../routes/api_helper/utilities';
+import './timer';
 
 class WorkoutForm extends connect(store)(LitElement) {
   static get properties() {
@@ -38,7 +39,7 @@ class WorkoutForm extends connect(store)(LitElement) {
         mood: '',
       };
     }
-    console.log(this.currentWorkout);
+    // console.log(this.currentWorkout);
   }
 
   getDefaultExercise() {
@@ -243,6 +244,7 @@ class WorkoutForm extends connect(store)(LitElement) {
               </button>`
             : html``}
           <div style="height: 70px"></div>
+          <workout-timer></workout-timer>
           <input
             type="submit"
             value="Save"

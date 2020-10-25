@@ -185,7 +185,7 @@ class WeightView extends connect(store)(LitElement) {
       .domain([
         // min(this.weightData, (d) => (d.date - lastDate) / 86400000),
         -365,
-        max(this.weightData, (d) => (d.log_date - lastDate) / 86400000) + 20,
+        max(this.weightData, (d) => (d.log_date - lastDate) / 86400000) + 14,
       ]);
     svg
       .append('defs')
