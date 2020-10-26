@@ -84,12 +84,12 @@ router.get('/userStatus', (req, res) => {
 router.post('/addWeight', requireAuthentication(), (req, res) => {
   const userID = req.user.id;
   const weight = req.body.weight;
-  const date = req.body.date;
+  const date = req.body.log_date;
 
   req.db.query(
     `INSERT INTO weight (user_id, log_date, weight) VALUES('${userID}', '${date}', ${weight}) ON CONFLICT (user_id, log_date) DO UPDATE SET weight = ${weight};`,
     (error) => {
-      if (error) throw error;
+      if (error) console.log('Error at addWeight: ', error);
       res.sendStatus(200);
     }
   );
@@ -97,7 +97,7 @@ router.post('/addWeight', requireAuthentication(), (req, res) => {
 
 router.post('/removeWeight', requireAuthentication(), (req, res) => {
   const userId = req.user.id;
-  const date = req.body.date;
+  const date = req.body.log_date;
 
   req.db.query(
     `DELETE FROM weight WHERE user_id='${userId}' AND log_date='${date}';`,
@@ -119,7 +119,7 @@ router.get('/getWeight', requireAuthentication(), (req, res) => {
     toDateString = ` log_date <= '${req.query.toDate}' AND`;
   }
   req.db.query(
-    `SELECT log_date, weight FROM weight WHERE${fromDateString}${toDateString} user_id = '${req.user.id}';`,
+    `SELECT log_date, weight FROM weight WHERE${fromDateString}${toDateString} user_id = '${req.user.id}' ORDER BY log_date;`,
     (err, result) => {
       res.status(200).send(result.rows);
     }

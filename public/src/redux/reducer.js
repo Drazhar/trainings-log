@@ -1,10 +1,12 @@
 import {
   UPDATE_USER_AUTHENTICATED,
+  ADD_WEIGHT,
   GET_WEIGHT_DATA,
   SET_EXERCISES,
   REMOVE_EXERCISE,
   SET_WORKOUTS,
   DELETE_WORKOUT,
+  REMOVE_WEIGHT,
 } from './actions';
 
 const INITIAL_STATE = {
@@ -21,6 +23,30 @@ export function reducer(state = INITIAL_STATE, action) {
       return Object.assign({}, state, {
         isUserAuthenticated: action.isUserAuthenticated.isUserAuth,
         userID: action.isUserAuthenticated.userID,
+      });
+    case ADD_WEIGHT:
+      let newWeightData = [...state.weightData];
+      for (let i = newWeightData.length - 1; i >= 0; i--) {
+        if (action.weightObject.log_date > newWeightData[i].log_date) {
+          newWeightData.splice(i + 1, 0, action.weightObject);
+          break;
+        }
+      }
+      return Object.assign({}, state, {
+        weightData: newWeightData,
+      });
+    case REMOVE_WEIGHT:
+      let newWeightDataRemove = [...state.weightData];
+      for (let i = newWeightDataRemove.length - 1; i >= 0; i--) {
+        if (
+          newWeightDataRemove[i].log_date.getTime() == action.log_date.getTime()
+        ) {
+          newWeightDataRemove.splice(i, 1);
+          break;
+        }
+      }
+      return Object.assign({}, state, {
+        weightData: newWeightDataRemove,
       });
     case GET_WEIGHT_DATA:
       return Object.assign({}, state, {
