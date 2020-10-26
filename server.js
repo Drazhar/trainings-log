@@ -26,6 +26,7 @@ app.use(
     }),
     resave: false,
     saveUninitialized: false, // Save even if not registered
+    cookie: { maxAge: 30 * 86400000 },
   })
 );
 app.use(express.json({ limit: '100kb' }));
