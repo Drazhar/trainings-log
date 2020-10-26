@@ -66,7 +66,7 @@ export function addWeight(weightObject) {
     type: ADD_WEIGHT,
     weightObject: {
       log_date: new Date(weightObject.log_date),
-      weight: weightObject.weight,
+      weight: parseFloat(weightObject.weight),
     },
   });
 }
