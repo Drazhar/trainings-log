@@ -2,7 +2,7 @@ import { LitElement, html } from 'lit-element';
 import { connect } from 'pwa-helpers';
 import { store } from '../src/redux/store';
 import { getTodayDate, getSqlDate } from '../../routes/api_helper/utilities';
-import { getWeightData } from '../src/redux/actions';
+import { getWeightData, addWeight, removeWeight } from '../src/redux/actions';
 import {
   select,
   curveBasis,
@@ -52,18 +52,10 @@ class WeightView extends connect(store)(LitElement) {
 
     const inputForm = document.getElementsByClassName('input-weight');
     const weight = inputForm[0].querySelector('#weight').value;
-    const date = inputForm[0].querySelector('#date').value;
+    const log_date = inputForm[0].querySelector('#date').value;
 
-    fetch(`${backendAddress}/api/addWeight`, {
-      method: 'POST',
-      credentials: 'include',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ date, weight }),
-    });
-
-    /* ADD DATA TO STATE! */
+    addWeight({ log_date, weight });
+    document.getElementById('weight').value = '';
   }
 
   stateChanged(state) {
@@ -74,16 +66,7 @@ class WeightView extends connect(store)(LitElement) {
   }
 
   _handleRemove(e) {
-    const date = e.target.id.split('_')[1];
-
-    fetch(`${backendAddress}/api/removeWeight`, {
-      method: 'POST',
-      credentials: 'include',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ date }),
-    });
+    removeWeight(e.target.id.split('_')[1]);
   }
 
   render() {
@@ -106,9 +89,9 @@ class WeightView extends connect(store)(LitElement) {
         <div class="view-main">
           <div id="weight-chart"></div>
           <form class="input-weight">
-            <label for="date">Date </label>
+            <!-- <label for="date">Date </label> -->
             <input type="date" id="date" value="${getTodayDate()}" isRequired />
-            <label for="weight">Weight</label>
+            <!-- <label for="weight">Weight</label> -->
             <input type="number" id="weight" isRequired />
             <input type="submit" value="Add" @click="${this._handleSubmit}" />
           </form>

@@ -3,6 +3,8 @@ import { backendAddress } from '../env';
 
 export const UPDATE_USER_AUTHENTICATED = 'UPDATE_USER_AUTHENTICATED';
 
+export const ADD_WEIGHT = 'ADD_WEIGHT';
+export const REMOVE_WEIGHT = 'REMOVE_WEIGHT';
 export const GET_WEIGHT_DATA = 'GET_WEIGHT_DATA';
 
 export const SET_EXERCISES = 'SET_EXERCISES';
@@ -46,9 +48,43 @@ export function getWeightData(fromDate, toDate) {
         weightData[index].log_date = new Date(item.log_date);
         weightData[index].weight = parseFloat(weightData[index].weight);
       });
-
       store.dispatch({ type: GET_WEIGHT_DATA, weightData });
     });
+}
+
+export function addWeight(weightObject) {
+  fetch(`${backendAddress}/api/addWeight`, {
+    method: 'POST',
+    credentials: 'include',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(weightObject),
+  });
+
+  store.dispatch({
+    type: ADD_WEIGHT,
+    weightObject: {
+      log_date: new Date(weightObject.log_date),
+      weight: weightObject.weight,
+    },
+  });
+}
+
+export function removeWeight(log_date) {
+  fetch(`${backendAddress}/api/removeWeight`, {
+    method: 'POST',
+    credentials: 'include',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ log_date }),
+  });
+
+  store.dispatch({
+    type: REMOVE_WEIGHT,
+    log_date: new Date(log_date),
+  });
 }
 
 export function updateExercise(exerciseData) {
