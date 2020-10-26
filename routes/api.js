@@ -249,20 +249,20 @@ router.post('/editWorkout', requireAuthentication(), (req, res) => {
         if (error) console.log(error);
 
         req.db.query(
-          `INSERT INTO workout (workout_id, user_id, workout_date, comment, mood) VALUES('${workoutId}', '${userID}', '${date}', '${comment}', '${mood}') AS data ON DUPLICATE KEY UPDATE workout_date=data.workout_date,comment=data.comment,mood=data.mood;`,
+          `INSERT INTO workout (workout_id, user_id, workout_date, user_comment, mood) VALUES('${workoutId}', '${userID}', '${date}', '${comment}', '${mood}');`,
           (error) => {
             if (error) console.log(error);
 
             req.body[workoutId].exercises.forEach((exercise, exerciseIndex) => {
               req.db.query(
-                `INSERT INTO training (workout_id, i, exercise_id) VALUES('${workoutId}', ${exerciseIndex}, '${exercise.id}') ON DUPLICATE KEY UPDATE exercise_id=VALUES(exercise_id);`,
+                `INSERT INTO training (workout_id, i, exercise_id) VALUES('${workoutId}', ${exerciseIndex}, '${exercise.id}');`,
                 (error) => {
                   if (error) console.log(error);
 
                   exercise.sets.forEach((set, setIndex) => {
                     set.forEach((value, valueIndex) => {
                       req.db.query(
-                        `INSERT INTO training_values (workout_id, ex_number, set_number, value_i, value) VALUES('${workoutId}', ${exerciseIndex}, ${setIndex}, ${valueIndex}, ${value}) ON DUPLICATE KEY UPDATE value=VALUES(value);`,
+                        `INSERT INTO training_values (workout_id, ex_number, set_number, value_i, value) VALUES('${workoutId}', ${exerciseIndex}, ${setIndex}, ${valueIndex}, ${value});`,
                         (error) => {
                           if (error) console.log(error);
                         }
@@ -346,7 +346,7 @@ router.get('/getWorkouts', requireAuthentication(), (req, res) => {
 
 router.post('/removeWorkout', requireAuthentication(), (req, res) => {
   req.db.query(
-    `DELETE FROM workout WHERE id='${req.body.workoutId}' AND user_id='${req.user.id}';`,
+    `DELETE FROM workout WHERE workout_id='${req.body.workoutId}' AND user_id='${req.user.id}';`,
     (error) => {
       if (error) throw error;
       res.sendStatus(200);

@@ -20,6 +20,8 @@ class workoutTimer extends LitElement {
       this._stopTimer();
     } catch {}
     this.startTime = new Date().getTime();
+    this.minutesPassed = '00';
+    this.secondsPassed = '00';
 
     this.interval = setInterval(() => {
       const timePassed = new Date() - this.startTime;

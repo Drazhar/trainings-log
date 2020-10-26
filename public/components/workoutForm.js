@@ -39,7 +39,6 @@ class WorkoutForm extends connect(store)(LitElement) {
         mood: '',
       };
     }
-    // console.log(this.currentWorkout);
   }
 
   getDefaultExercise() {
@@ -61,7 +60,7 @@ class WorkoutForm extends connect(store)(LitElement) {
     e.preventDefault();
 
     this.currentWorkout = Object.assign({}, this.currentWorkout, {
-      exercises: [...this.currentWorkout.exercises, this.getDefaultExercise()],
+      exercises: [this.getDefaultExercise(), ...this.currentWorkout.exercises],
     });
   }
 
@@ -126,12 +125,13 @@ class WorkoutForm extends connect(store)(LitElement) {
         });
       });
     });
-    this.requestUpdate(this.currentWorkout, '');
-
     let reduxObj = {};
     reduxObj[this.woId] = this.currentWorkout;
+    reduxObj[this.woId].date = new Date(this.currentWorkout.date);
 
     updateWorkout(reduxObj);
+
+    this.requestUpdate(this.currentWorkout, '');
 
     // SEND TO BACKEND FOR DATABASE
     fetch(`${backendAddress}/api/editWorkout`, {
@@ -165,6 +165,13 @@ class WorkoutForm extends connect(store)(LitElement) {
             name="date"
             value="${this.currentWorkout.date}"
           />
+          <button @click="${this._addExercise}">Add Exercise</button>
+          ${this.newWo === false
+            ? html`<button @click="${this._deleteWorkout}">
+                Delete Workout
+              </button>`
+            : html``}
+          <workout-timer></workout-timer>
 
           ${this.currentWorkout.exercises.map((exercise, exIndex) => {
             return html`
@@ -178,10 +185,19 @@ class WorkoutForm extends connect(store)(LitElement) {
                   @change=${this._changeExercise}
                 >
                   ${Object.keys(this.exercises).map((key) => {
+                    if (key == exercise.id) {
+                      const selected = "selected='selected'";
+                    } else {
+                      const selected = '';
+                    }
                     return html`
-                      <option value="${key}">
-                        ${this.exercises[key].name}
-                      </option>
+                      ${key == exercise.id
+                        ? html`<option value="${key}" selected>
+                            ${this.exercises[key].name}
+                          </option>`
+                        : html`<option value="${key}">
+                            ${this.exercises[key].name}
+                          </option>`}
                     `;
                   })}
                 </select>
@@ -237,14 +253,7 @@ class WorkoutForm extends connect(store)(LitElement) {
             `;
           })}
 
-          <button @click="${this._addExercise}">Add Exercise</button>
-          ${this.newWo === false
-            ? html`<button @click="${this._deleteWorkout}">
-                Delete Workout
-              </button>`
-            : html``}
           <div style="height: 70px"></div>
-          <workout-timer></workout-timer>
           <input
             type="submit"
             value="Save"
