@@ -38,20 +38,27 @@ class WeightView extends connect(store)(LitElement) {
       range = parseInt(range.value);
     }
 
-    if (range === 0) {
-      getWeightData();
-    } else {
-      getWeightData();
-      // getWeightData(getTodayDate(range), getTodayDate());
-    }
+    getWeightData();
   }
 
   _handleSubmit(e) {
     e.preventDefault();
 
     const inputForm = document.getElementsByClassName('input-weight');
-    const weight = inputForm[0].querySelector('#weight').value;
+    const weight = parseFloat(inputForm[0].querySelector('#weight').value);
     const log_date = inputForm[0].querySelector('#date').value;
+
+    if (!weight) {
+      console.log("Please input a number.");
+      return;
+    } else if (weight < 0) {
+      console.log("You have a negative weight?");
+      return;
+    }
+
+    if (log_date.length > 12) {
+      console.log("That's a kinda long date. Please make sure to enter a correct date.")
+    }
 
     addWeight({ log_date, weight });
     document.getElementById('weight').value = '';
