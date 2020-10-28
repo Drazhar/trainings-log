@@ -8,6 +8,7 @@ import {
   DELETE_WORKOUT,
   REMOVE_WEIGHT,
 } from './actions';
+import { reorderWorkouts } from './utilities/reorderWorkouts';
 
 const INITIAL_STATE = {
   isUserAuthenticated: false,
@@ -63,8 +64,22 @@ export function reducer(state = INITIAL_STATE, action) {
       delete result.exercises[action.exerciseId];
       return result;
     case SET_WORKOUTS:
+      let currentWorkoutStore = Object.assign(
+        {},
+        action.workoutData,
+        state.workouts
+      );
+
+      const workoutOrder = Object.keys(currentWorkoutStore);
+      if (
+        currentWorkoutStore[workoutOrder[0]].date.getTime() <
+        currentWorkoutStore[workoutOrder[1]].date.getTime()
+      ) {
+        currentWorkoutStore = reorderWorkouts(currentWorkoutStore);
+      }
+
       return Object.assign({}, state, {
-        workouts: Object.assign({}, state.workouts, action.workoutData),
+        workouts: currentWorkoutStore,
       });
     case DELETE_WORKOUT:
       let resultRemWo = Object.assign({}, state, {

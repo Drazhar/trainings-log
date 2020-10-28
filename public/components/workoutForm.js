@@ -156,8 +156,6 @@ class WorkoutForm extends connect(store)(LitElement) {
   render() {
     return html`
       <div id="fullscreen-popup">
-        <!-- Timer oben -->
-
         <form>
           <input
             type="date"
