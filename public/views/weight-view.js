@@ -15,7 +15,6 @@ import {
   axisBottom,
 } from 'd3';
 import { getMovingAverage } from '../src/movingAverage';
-import { backendAddress } from '../src/env';
 
 class WeightView extends connect(store)(LitElement) {
   static get properties() {
@@ -62,11 +61,25 @@ class WeightView extends connect(store)(LitElement) {
     if (this.weightData !== state.weightData) {
       this.weightData = state.weightData;
       this.movingAverage = getMovingAverage(this.weightData, 5);
+
+      this._updateDefaultWeight();
     }
   }
 
   _handleRemove(e) {
     removeWeight(e.target.id.split('_')[1]);
+  }
+
+  _updateDefaultWeight() {
+    if (this.weightData.length > 0) {
+      const currentDate = new Date(document.getElementById('date').value);
+      for (let i = this.weightData.length - 1; i > 0; i--) {
+        if (currentDate.getTime() >= this.weightData[i].log_date.getTime()) {
+          document.getElementById('weight').value = this.weightData[i].weight;
+          break;
+        }
+      }
+    }
   }
 
   render() {
@@ -90,9 +103,22 @@ class WeightView extends connect(store)(LitElement) {
           <div id="weight-chart"></div>
           <form class="input-weight">
             <!-- <label for="date">Date </label> -->
-            <input type="date" id="date" value="${getTodayDate()}" isRequired />
+            <input
+              type="date"
+              id="date"
+              value="${getTodayDate()}"
+              @change="${this._updateDefaultWeight}"
+              isRequired
+            />
             <!-- <label for="weight">Weight</label> -->
-            <input type="number" id="weight" isRequired />
+            <input
+              type="number"
+              id="weight"
+              min="0"
+              step="0.1"
+              @change="${this._replaceCommaWeight}"
+              isRequired
+            />
             <input type="submit" value="Add" @click="${this._handleSubmit}" />
           </form>
           <table
