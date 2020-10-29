@@ -60,7 +60,14 @@ class WorkoutForm extends connect(store)(LitElement) {
     e.preventDefault();
 
     this.currentWorkout = Object.assign({}, this.currentWorkout, {
-      exercises: [this.getDefaultExercise(), ...this.currentWorkout.exercises],
+      exercises: [...this.currentWorkout.exercises, this.getDefaultExercise()],
+    });
+
+    this.updateComplete.then(() => {
+      let newCard = document.getElementsByClassName('workout-exercise-card');
+      newCard = newCard[newCard.length - 1];
+
+      newCard.scrollIntoView({ behavior: 'smooth' });
     });
   }
 
