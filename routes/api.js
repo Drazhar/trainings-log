@@ -167,7 +167,7 @@ router.get('/getExercises', requireAuthentication(), (req, res) => {
       for (let i = 0; i < result_exercise.rows.length; i++) {
         promiseGetDate = new Promise((resolve, reject) => {
           req.db.query(
-            `SELECT workout.workout_date FROM workout JOIN training ON workout.workout_id = training.workout_id WHERE workout.user_id = '${req.user.id}' AND exercise_id = '${result_exercise.rows[i].exercise_id}' ORDER BY workout.workout_date DESC LIMIT 1;`,
+            `SELECT workout.workout_date FROM workout JOIN training ON workout.workout_id = training.workout_id WHERE workout.user_id = '${req.user.id}' AND exercise_id = '${result_exercise.rows[i].id}' ORDER BY workout.workout_date DESC LIMIT 1;`,
             (err, result_count) => {
               if (err) console.log('Error: ', err);
 
