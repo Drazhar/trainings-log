@@ -28,6 +28,10 @@
     </Filter>
     <FolderPairs>
         <Pair>
+            <Left>C:\Users\phili\Dropbox\Eigene Sachen\TrainingsLog\postgres</Left>
+            <Right>Y:\</Right>
+        </Pair>
+        <Pair>
             <Left>C:\Users\phili\Documents\FullStackLearning\TrainingsLog</Left>
             <Right>\\RASPBERRYPI\share\TrainingsLog</Right>
             <Filter>
