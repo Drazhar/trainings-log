@@ -1,7 +1,13 @@
+# Trainings-log
+This should be a webpage for tracking your workouts and weight.
+
+### Why another workout log?!
+Because I wanted a training log which can be used comfortable on mobile and desktop and is flexible enough for logging my workouts, which are mainly body weight training for rock climbing. Most apps I found for this where either only for mobile or to much into training with weights or running. I couldn't find one which I liked. Also I want to improve my coding skills.
+
 # WIP
 This readme has still to be created :sweat:
 
-# Deployment
+# Deployment/Development
 To run the code you first need to create an .env file in the main directory with the following variables:
 ```
 DB_ADDRESS=192.168.0.4  # Address of the postgreSQL server
