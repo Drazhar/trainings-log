@@ -1,7 +1,7 @@
 # WIP
 This readme has still to be created :sweat:
 
-# Deployment
+# Deployment/Development
 To run the code you first need to create an .env file in the main directory with the following variables:
 ```
 DB_ADDRESS=192.168.0.4  # Address of the postgreSQL server
