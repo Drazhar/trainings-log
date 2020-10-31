@@ -157,72 +157,155 @@ router.post('/editExercise', requireAuthentication(), (req, res) => {
   res.sendStatus(200);
 });
 
-router.get('/getExercises', requireAuthentication(), (req, res) => {
-  req.db.query(
-    `SELECT exercise_id AS "id", exercise_name AS "name", color, description FROM exercise WHERE user_id = '${req.user.id}';`,
-    (err, result_exercise) => {
-      if (err) console.log('Error at api call getExercises: ', err);
+router.get('/getTraining', requireAuthentication(), (req, res) => {
+  // Get exercises
+  let resultGetExercise = {};
+  const promiseGetExercises = new Promise(
+    (resolveExercises, rejectExercises) => {
+      req.db.query(
+        `SELECT exercise_id AS "id", exercise_name AS "name", color, description FROM exercise WHERE user_id = '${req.user.id}';`,
+        (err, result_exercise) => {
+          if (err) console.log('Error at api call getExercises: ', err);
 
-      let callbackCounter = 0;
-      for (let i = 0; i < result_exercise.rows.length; i++) {
-        promiseGetDate = new Promise((resolve, reject) => {
-          req.db.query(
-            `SELECT workout.workout_date FROM workout JOIN training ON workout.workout_id = training.workout_id WHERE workout.user_id = '${req.user.id}' AND exercise_id = '${result_exercise.rows[i].id}' ORDER BY workout.workout_date DESC LIMIT 1;`,
-            (err, result_count) => {
-              if (err) console.log('Error: ', err);
+          let callbackCounter = 0;
+          for (let i = 0; i < result_exercise.rows.length; i++) {
+            const promiseGetDate = new Promise((resolve, reject) => {
+              req.db.query(
+                `SELECT workout.workout_date FROM workout JOIN training ON workout.workout_id = training.workout_id WHERE workout.user_id = '${req.user.id}' AND exercise_id = '${result_exercise.rows[i].id}' ORDER BY workout.workout_date DESC LIMIT 1;`,
+                (err, result_count) => {
+                  if (err) console.log('Error: ', err);
 
-              if (result_count.rows.length > 0) {
-                result_exercise.rows[i].lastUsed =
-                  result_count.rows[0].workout_date;
+                  if (result_count.rows.length > 0) {
+                    result_exercise.rows[i].lastUsed =
+                      result_count.rows[0].workout_date;
+                  }
+
+                  resolve();
+                }
+              );
+            });
+
+            const promiseGetCount = new Promise((resolve, reject) => {
+              req.db.query(
+                `SELECT COUNT(training.exercise_id) AS count FROM workout JOIN training ON workout.workout_id = training.workout_id WHERE workout.user_id = '${req.user.id}' AND exercise_id = '${result_exercise.rows[i].id}';`,
+                (err, result_count) => {
+                  if (err) throw err;
+
+                  result_exercise.rows[i].count = result_count.rows[0].count;
+
+                  resolve();
+                }
+              );
+            });
+
+            const promiseGetLogs = new Promise((resolve, reject) => {
+              req.db.query(
+                `SELECT log_name AS name, unit FROM log_table WHERE exercise_id='${result_exercise.rows[i].id}' ORDER BY i ASC;`,
+                (err, result_logs) => {
+                  if (err) throw err;
+
+                  result_exercise.rows[i].logs = result_logs.rows.map(
+                    (item) => {
+                      return {
+                        name: item.name,
+                        unit: item.unit != 'null' ? item.unit : '',
+                      };
+                    }
+                  );
+
+                  resolve();
+                }
+              );
+            });
+
+            Promise.all([promiseGetDate, promiseGetCount, promiseGetLogs]).then(
+              () => {
+                callbackCounter++;
+                if (callbackCounter === result_exercise.rows.length) {
+                  resultGetExercise = result_exercise.rows;
+                  resolveExercises();
+                }
               }
-
-              resolve();
-            }
-          );
-        });
-
-        promiseGetCount = new Promise((resolve, reject) => {
-          req.db.query(
-            `SELECT COUNT(training.exercise_id) AS count FROM workout JOIN training ON workout.workout_id = training.workout_id WHERE workout.user_id = '${req.user.id}' AND exercise_id = '${result_exercise.rows[i].id}';`,
-            (err, result_count) => {
-              if (err) throw err;
-
-              result_exercise.rows[i].count = result_count.rows[0].count;
-
-              resolve();
-            }
-          );
-        });
-
-        promiseGetLogs = new Promise((resolve, reject) => {
-          req.db.query(
-            `SELECT log_name AS name, unit FROM log_table WHERE exercise_id='${result_exercise.rows[i].id}' ORDER BY i ASC;`,
-            (err, result_logs) => {
-              if (err) throw err;
-
-              result_exercise.rows[i].logs = result_logs.rows.map((item) => {
-                return {
-                  name: item.name,
-                  unit: item.unit != 'null' ? item.unit : '',
-                };
-              });
-
-              resolve();
-            }
-          );
-        });
-
-        Promise.all([promiseGetDate, promiseGetCount, promiseGetLogs]).then(
-          () => {
-            callbackCounter++;
-            if (callbackCounter === result_exercise.rows.length) {
-              res.status(200).send(result_exercise.rows);
-            }
+            );
           }
-        );
-      }
+        }
+      );
     }
   );
+
+  // Get workouts
+  let resultGetWorkouts = {};
+  const promiseGetWorkouts = new Promise((resolveWorkouts, rejectWorkouts) => {
+    req.db.query(
+      `SELECT workout.workout_id, workout.workout_date, workout.user_comment, workout.mood, training.i, training.exercise_id, training_values.set_number, training_values.value_i, training_values.value 
+      FROM workout
+      JOIN training ON workout.workout_id = training.workout_id 
+      JOIN training_values ON training_values.workout_id = workout.workout_id 
+      AND training_values.ex_number = training.i
+      WHERE workout.user_id = '${req.user.id}'
+      ORDER BY workout.workout_date DESC, training_values.set_number ASC;`,
+      (err, result) => {
+        if (err) console.log('Error: ', err);
+
+        let returnObject = {};
+        if (result.rows.length > 0) {
+          result.rows.forEach((line) => {
+            if (!(`${line.workout_id}` in returnObject)) {
+              returnObject[line.workout_id] = {
+                date: line.workout_date,
+                comment: line.user_comment,
+                mood: line.mood,
+                exercises: [],
+              };
+            }
+
+            let keyExists = false;
+            returnObject[line.workout_id].exercises.forEach((exercise) => {
+              if (exercise.id == `${line.exercise_id}`) {
+                keyExists = true;
+              }
+            });
+            if (!keyExists) {
+              returnObject[line.workout_id].exercises.push({
+                id: line.exercise_id,
+                // mood: line.exerciseMood,
+                sets: [],
+              });
+            }
+
+            returnObject[line.workout_id].exercises.forEach(
+              (exercise, exIndex) => {
+                if (exercise.id == `${line.exercise_id}`) {
+                  if (
+                    !returnObject[line.workout_id].exercises[exIndex].sets[
+                      line.set_number
+                    ]
+                  ) {
+                    returnObject[line.workout_id].exercises[exIndex].sets.push(
+                      []
+                    );
+                  }
+
+                  returnObject[line.workout_id].exercises[exIndex].sets[
+                    line.set_number
+                  ][line.value_i] = line.value;
+                }
+              }
+            );
+          });
+        }
+        resultGetWorkouts = returnObject;
+        resolveWorkouts();
+      }
+    );
+  });
+
+  // Send data back
+  Promise.all([promiseGetExercises, promiseGetWorkouts]).then(() => {
+    res
+      .status(200)
+      .send({ exercises: resultGetExercise, workouts: resultGetWorkouts });
+  });
 });
 
 router.post('/removeExercise', requireAuthentication(), (req, res) => {
@@ -278,70 +361,6 @@ router.post('/editWorkout', requireAuthentication(), (req, res) => {
     );
   });
   res.sendStatus(200);
-});
-
-router.get('/getWorkouts', requireAuthentication(), (req, res) => {
-  req.db.query(
-    `SELECT workout.workout_id, workout.workout_date, workout.user_comment, workout.mood, training.i, training.exercise_id, training_values.set_number, training_values.value_i, training_values.value 
-      FROM workout
-      JOIN training ON workout.workout_id = training.workout_id 
-      JOIN training_values ON training_values.workout_id = workout.workout_id 
-      AND training_values.ex_number = training.i
-      WHERE workout.user_id = '${req.user.id}'
-      ORDER BY workout.workout_date DESC, training_values.set_number ASC;`,
-    (err, result) => {
-      if (err) console.log('Error: ', err);
-
-      let returnObject = {};
-      if (result.rows.length > 0) {
-        result.rows.forEach((line) => {
-          if (!(`${line.workout_id}` in returnObject)) {
-            returnObject[line.workout_id] = {
-              date: line.workout_date,
-              comment: line.user_comment,
-              mood: line.mood,
-              exercises: [],
-            };
-          }
-
-          let keyExists = false;
-          returnObject[line.workout_id].exercises.forEach((exercise) => {
-            if (exercise.id == `${line.exercise_id}`) {
-              keyExists = true;
-            }
-          });
-          if (!keyExists) {
-            returnObject[line.workout_id].exercises.push({
-              id: line.exercise_id,
-              // mood: line.exerciseMood,
-              sets: [],
-            });
-          }
-
-          returnObject[line.workout_id].exercises.forEach(
-            (exercise, exIndex) => {
-              if (exercise.id == `${line.exercise_id}`) {
-                if (
-                  !returnObject[line.workout_id].exercises[exIndex].sets[
-                    line.set_number
-                  ]
-                ) {
-                  returnObject[line.workout_id].exercises[exIndex].sets.push(
-                    []
-                  );
-                }
-
-                returnObject[line.workout_id].exercises[exIndex].sets[
-                  line.set_number
-                ][line.value_i] = line.value;
-              }
-            }
-          );
-        });
-      }
-      res.status(200).send(returnObject);
-    }
-  );
 });
 
 router.post('/removeWorkout', requireAuthentication(), (req, res) => {
