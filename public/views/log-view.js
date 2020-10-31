@@ -38,7 +38,9 @@ class LogView extends connect(store)(LitElement) {
     }
     if (this.exercises !== state.exercises) {
       this.exercises = state.exercises;
-      this.exerciseOrder = getExerciseOrder(this.exercises);
+    }
+    if (this.exerciseOrder !== state.exerciseOrder) {
+      this.exerciseOrder = state.exerciseOrder;
     }
   }
 
@@ -90,24 +92,6 @@ class LogView extends connect(store)(LitElement) {
 }
 
 customElements.define('log-view', LogView);
-
-function getExerciseOrder(exercises) {
-  let result = [];
-  Object.keys(exercises).forEach((key) => {
-    result.push([key, exercises[key].lastUsed, exercises[key].count]);
-  });
-  result.sort((a, b) => {
-    for (let i = 1; i < a.length; i++) {
-      if (a[i] < b[i]) {
-        return 1;
-      } else if (a[i] > b[i]) {
-        return -1;
-      }
-    }
-    return 0;
-  });
-  return result;
-}
 
 function getExerciseWoData(workouts) {
   let result = {};

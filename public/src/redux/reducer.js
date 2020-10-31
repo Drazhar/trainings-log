@@ -54,14 +54,27 @@ export function reducer(state = INITIAL_STATE, action) {
         weightData: action.weightData,
       });
     case SET_EXERCISES:
+      let setExerciseObject = Object.assign(
+        {},
+        state.exercises,
+        action.exerciseData
+      );
+
       return Object.assign({}, state, {
-        exercises: Object.assign({}, state.exercises, action.exerciseData),
+        exercises: setExerciseObject,
+        exerciseOrder: getExerciseOrder(setExerciseObject),
       });
     case REMOVE_EXERCISE:
       let result = Object.assign({}, state, {
         exercises: Object.assign({}, state.exercises),
       });
       delete result.exercises[action.exerciseId];
+      for (let i = 0; i < state.exerciseOrder.length; i++) {
+        if (state.exerciseOrder[i][0] == action.exerciseId) {
+          result.exerciseOrder.splice(i, 1); // Not nice but easy :-/
+          break;
+        }
+      }
       return result;
     case SET_WORKOUTS:
       let currentWorkoutStore = Object.assign(
@@ -90,4 +103,22 @@ export function reducer(state = INITIAL_STATE, action) {
     default:
       return state;
   }
+}
+
+function getExerciseOrder(exercises) {
+  let result = [];
+  Object.keys(exercises).forEach((key) => {
+    result.push([key, exercises[key].lastUsed, exercises[key].count]);
+  });
+  result.sort((a, b) => {
+    for (let i = 1; i < a.length; i++) {
+      if (a[i] < b[i]) {
+        return 1;
+      } else if (a[i] > b[i]) {
+        return -1;
+      }
+    }
+    return 0;
+  });
+  return result;
 }

@@ -14,12 +14,17 @@ class WorkoutForm extends connect(store)(LitElement) {
       exercises: { type: Object },
       woId: { type: String },
       newWo: { type: Boolean },
+      exerciseOrder: { type: Array },
     };
   }
 
   stateChanged(state) {
     if (this.exercises !== state.exercises) {
       this.exercises = state.exercises;
+    }
+
+    if (this.exerciseOrder !== state.exerciseOrder) {
+      this.exerciseOrder = state.exerciseOrder;
     }
   }
 
@@ -68,6 +73,9 @@ class WorkoutForm extends connect(store)(LitElement) {
       newCard = newCard[newCard.length - 1];
 
       newCard.scrollIntoView({ behavior: 'smooth' });
+      this._changeExercise({
+        target: newCard.getElementsByTagName('select')[0],
+      });
     });
   }
 
@@ -79,7 +87,6 @@ class WorkoutForm extends connect(store)(LitElement) {
     this.currentWorkout.exercises[id].sets[0] = new Array(
       this.exercises[exerciseId].logs.length
     ).fill(0);
-    // console.log(this.currentWorkout);
   }
 
   _removeExercise(e) {
@@ -117,7 +124,6 @@ class WorkoutForm extends connect(store)(LitElement) {
 
   _saveWorkout(e) {
     e.preventDefault();
-    // console.log(this.currentWorkout);
 
     this.currentWorkout.date = document.getElementById('date').value;
     this.currentWorkout.exercises.forEach((exercise, exIndex) => {
@@ -189,19 +195,14 @@ class WorkoutForm extends connect(store)(LitElement) {
                   id="selectExerciseId_${exIndex}"
                   @change=${this._changeExercise}
                 >
-                  ${Object.keys(this.exercises).map((key) => {
-                    if (key == exercise.id) {
-                      const selected = "selected='selected'";
-                    } else {
-                      const selected = '';
-                    }
+                  ${this.exerciseOrder.map((item) => {
                     return html`
-                      ${key == exercise.id
-                        ? html`<option value="${key}" selected>
-                            ${this.exercises[key].name}
+                      ${item[0] == exercise.id
+                        ? html`<option value="${item[0]}" selected>
+                            ${this.exercises[item[0]].name}
                           </option>`
-                        : html`<option value="${key}">
-                            ${this.exercises[key].name}
+                        : html`<option value="${item[0]}">
+                            ${this.exercises[item[0]].name}
                           </option>`}
                     `;
                   })}
