@@ -3,7 +3,7 @@ import { connect } from 'pwa-helpers';
 import { store } from '../src/redux/store';
 import '../components/exerciseForm';
 import { displayForm } from '../src/eventListener/openCloseForms';
-import { getExercises, removeExercise } from '../src/redux/actions';
+import { getTrainingData, removeExercise } from '../src/redux/actions';
 import { backendAddress } from '../src/env';
 
 class ExerciseView extends connect(store)(LitElement) {
@@ -21,7 +21,7 @@ class ExerciseView extends connect(store)(LitElement) {
 
   connectedCallback() {
     super.connectedCallback();
-    getExercises();
+    getTrainingData();
     document.addEventListener('open-exercise-form', displayForm);
   }
 

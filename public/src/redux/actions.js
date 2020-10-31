@@ -95,8 +95,10 @@ export function removeExercise(exerciseId) {
   store.dispatch({ type: REMOVE_EXERCISE, exerciseId });
 }
 
-export function getExercises() {
-  let fetchURL = `${backendAddress}/api/getExercises`;
+export function getExercises() {}
+
+export function getTrainingData() {
+  let fetchURL = `${backendAddress}/api/getTraining`;
 
   return fetch(fetchURL, {
     method: 'GET',
@@ -106,9 +108,23 @@ export function getExercises() {
     },
   })
     .then((response) => response.json())
-    .then((exercises) => {
+    .then((data) => {
+      Object.keys(data.workouts).forEach((key) => {
+        data.workouts[key].date = new Date(data.workouts[key].date);
+        data.workouts[key].exercises.forEach((ex, index) => {
+          ex.sets.forEach((numberList, nIndex) => {
+            numberList.forEach((value, vIndex) => {
+              data.workouts[key].exercises[index].sets[nIndex][
+                vIndex
+              ] = parseInt(value);
+            });
+          });
+        });
+      });
+      store.dispatch({ type: SET_WORKOUTS, workoutData: data.workouts });
+
       let exerciseData = {};
-      exercises.forEach((item) => {
+      data.exercises.forEach((item) => {
         exerciseData[item.id] = {
           name: item.name,
           color: item.color,
@@ -119,32 +135,6 @@ export function getExercises() {
         };
       });
       store.dispatch({ type: SET_EXERCISES, exerciseData });
-    });
-}
-
-export function getWorkouts() {
-  fetch(`${backendAddress}/api/getWorkouts`, {
-    method: 'GET',
-    credentials: 'include',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-  })
-    .then((response) => response.json())
-    .then((workoutData) => {
-      Object.keys(workoutData).forEach((key) => {
-        workoutData[key].date = new Date(workoutData[key].date);
-        workoutData[key].exercises.forEach((ex, index) => {
-          ex.sets.forEach((numberList, nIndex) => {
-            numberList.forEach((value, vIndex) => {
-              workoutData[key].exercises[index].sets[nIndex][vIndex] = parseInt(
-                value
-              );
-            });
-          });
-        });
-      });
-      store.dispatch({ type: SET_WORKOUTS, workoutData });
     });
 }
 

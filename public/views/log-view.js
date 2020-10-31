@@ -3,7 +3,7 @@ import { connect } from 'pwa-helpers';
 import { store } from '../src/redux/store';
 import '../components/workoutForm';
 import { displayForm } from '../src/eventListener/openCloseForms';
-import { getExercises, getWorkouts } from '../src/redux/actions';
+import { getTrainingData } from '../src/redux/actions';
 import '../components/logViews/logCharts';
 import '../components/logViews/logTimeline';
 
@@ -22,8 +22,7 @@ class LogView extends connect(store)(LitElement) {
     super.connectedCallback();
     document.addEventListener('open-workout-form', displayForm);
     // document.dispatchEvent(new CustomEvent('open-workout-form'));
-    getExercises();
-    getWorkouts();
+    getTrainingData();
   }
 
   disconnectedCallback() {
