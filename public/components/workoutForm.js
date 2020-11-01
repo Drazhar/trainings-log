@@ -45,6 +45,7 @@ class WorkoutForm extends connect(store)(LitElement) {
         comment: '',
         mood: '',
       };
+      this._addExercise();
     }
   }
 
@@ -64,7 +65,9 @@ class WorkoutForm extends connect(store)(LitElement) {
   }
 
   _addExercise(e) {
-    e.preventDefault();
+    try {
+      e.preventDefault();
+    } catch {}
 
     this.currentWorkout = Object.assign({}, this.currentWorkout, {
       exercises: [...this.currentWorkout.exercises, this.getDefaultExercise()],
@@ -86,10 +89,17 @@ class WorkoutForm extends connect(store)(LitElement) {
     const exerciseId = document.getElementById(e.target.id).value;
     this.currentWorkout.exercises[id].id = exerciseId;
     this.requestUpdate(this.currentWorkout, '');
-    this.currentWorkout.exercises[id].sets[0] = new Array(
-      this.exercises[exerciseId].logs.length
-    ).fill(0);
-    console.log(this.exerciseWoData[exerciseId][0]);
+    if (this.exercises[exerciseId].lastEntries) {
+      this.currentWorkout.exercises[id].sets = new Array(
+        this.exercises[exerciseId].lastEntries.length
+      ).fill(
+        new Array(this.exercises[exerciseId].lastEntries[0].length).fill('')
+      );
+    } else {
+      this.currentWorkout.exercises[id].sets = [
+        new Array(this.exercises[exerciseId].logs.length).fill(''),
+      ];
+    }
   }
 
   _removeExercise(e) {
@@ -213,11 +223,16 @@ class WorkoutForm extends connect(store)(LitElement) {
                       <tr>
                         <td>${setIndex + 1}</td>
                         ${currentSet.map((setData, dataIndex) => {
+                          const placeholder = this.exercises[exercise.id]
+                            .lastEntries;
                           return html`<td>
                             <input
                               type="number"
                               id="value_${exIndex}_${setIndex}_${dataIndex}"
                               value="${setData}"
+                              placeholder="${placeholder
+                                ? placeholder[setIndex][dataIndex]
+                                : ''}"
                               style="width:20vw"
                             />
                           </td> `;
