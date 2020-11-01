@@ -116,7 +116,9 @@ class WorkoutForm extends connect(store)(LitElement) {
     const idToAddTo = parseInt(e.target.id.split('_')[1]);
     const oldVal = Object.assign({}, this.currentWorkout);
     this.currentWorkout.exercises[idToAddTo].sets.push(
-      new Array(this.currentWorkout.exercises[idToAddTo].sets[0].length).fill(0)
+      new Array(this.currentWorkout.exercises[idToAddTo].sets[0].length).fill(
+        ''
+      )
     );
     this.requestUpdate(this.currentWorkout, oldVal);
   }
@@ -189,6 +191,7 @@ class WorkoutForm extends connect(store)(LitElement) {
           <workout-timer></workout-timer>
 
           ${this.currentWorkout.exercises.map((exercise, exIndex) => {
+            const placeholder = this.exercises[exercise.id].lastEntries;
             return html`
               <div
                 class="workout-exercise-card"
@@ -216,7 +219,6 @@ class WorkoutForm extends connect(store)(LitElement) {
                   <tr>
                     <td>Set</td>
                     ${this.exercises[exercise.id].logs.map((logInfo) => {
-                      console.log(logInfo);
                       return html` <td>${logInfo.name}</td> `;
                     })}
                   </tr>
@@ -225,34 +227,37 @@ class WorkoutForm extends connect(store)(LitElement) {
                       <tr>
                         <td>${setIndex + 1}</td>
                         ${currentSet.map((setData, dataIndex) => {
-                          const placeholder = this.exercises[exercise.id]
-                            .lastEntries;
                           return html`<td style="display:flex;">
                             <input
                               type="number"
                               id="value_${exIndex}_${setIndex}_${dataIndex}"
                               value="${setData}"
                               placeholder="${placeholder
-                                ? placeholder[setIndex][dataIndex]
+                                ? placeholder.length > setIndex
+                                  ? placeholder[setIndex][dataIndex]
+                                  : ''
                                 : ''}"
-                              style="width:20vw"
+                              style="width:3em"
                             />
                             <div
+                              class="woIncDecBut"
                               for="value_${exIndex}_${setIndex}_${dataIndex}"
                               @click="${increase}"
                             >
-                              _+_
+                              +
                             </div>
                             <div
+                              class="woIncDecBut"
                               for="value_${exIndex}_${setIndex}_${dataIndex}"
                               @click="${decrease}"
                             >
-                              _-_
+                              -
                             </div>
                           </td> `;
                         })}
                         <td>
                           <button
+                            style="margin-left:2em"
                             id="removeSet_${exIndex}_${setIndex}"
                             @click="${this._removeSet}"
                           >
@@ -271,7 +276,7 @@ class WorkoutForm extends connect(store)(LitElement) {
                   Add set
                 </button>
                 <button
-                  style="margin: 5px"
+                  style="margin: 1.5em 0 0 1.5em"
                   id="removeExercise_${exIndex}"
                   @click="${this._removeExercise}"
                 >

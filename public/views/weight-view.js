@@ -132,8 +132,8 @@ class WeightView extends connect(store)(LitElement) {
               @change="${this._replaceCommaWeight}"
               isRequired
             />
-            <div for="weight" @click="${increase}">+</div>
-            <div for="weight" @click="${decrease}">-</div>
+            <div class="woIncDecBut" for="weight" @click="${increase}">+</div>
+            <div class="woIncDecBut" for="weight" @click="${decrease}">-</div>
             <input type="submit" value="Add" @click="${this._handleSubmit}" />
           </form>
           <table

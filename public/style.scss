@@ -213,6 +213,19 @@ nav {
 
 .input-weight {
   color: var(--max-white);
+  display: flex;
+  margin: 0.5em 0 1em 0;
+  align-items: center;
+  justify-content: space-evenly;
+
+  #weight {
+    width: 5em;
+    font-size: 1em;
+  }
+
+  #date {
+    width: 9em;
+  }
 }
 
 #weight-chart {
@@ -227,4 +240,14 @@ nav {
   position: absolute;
   bottom: 6em;
   right: 2em;
+}
+
+.woIncDecBut {
+  width: 1.5em;
+  text-align: center;
+  height: 1.3em;
+  vertical-align: middle;
+  background-color: var(--primary-color);
+  margin: 0.1em;
+  border-radius: 0.1em;
 }
