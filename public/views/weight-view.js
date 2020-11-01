@@ -49,15 +49,17 @@ class WeightView extends connect(store)(LitElement) {
     const log_date = inputForm[0].querySelector('#date').value;
 
     if (!weight) {
-      console.log("Please input a number.");
+      console.log('Please input a number.');
       return;
     } else if (weight < 0) {
-      console.log("You have a negative weight?");
+      console.log('You have a negative weight?');
       return;
     }
 
     if (log_date.length > 12) {
-      console.log("That's a kinda long date. Please make sure to enter a correct date.")
+      console.log(
+        "That's a kinda long date. Please make sure to enter a correct date."
+      );
     }
 
     addWeight({ log_date, weight });
@@ -69,7 +71,10 @@ class WeightView extends connect(store)(LitElement) {
       this.weightData = state.weightData;
       this.movingAverage = getMovingAverage(this.weightData, 5);
 
-      this._updateDefaultWeight();
+      // Sometimes the state is changed before the view is connected...
+      try {
+        this._updateDefaultWeight();
+      } catch {}
     }
   }
 
