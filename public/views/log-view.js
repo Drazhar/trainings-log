@@ -4,6 +4,7 @@ import { store } from '../src/redux/store';
 import '../components/workoutForm';
 import { displayForm } from '../src/eventListener/openCloseForms';
 import { getTrainingData } from '../src/redux/actions';
+import { getTodayDate } from '../../routes/api_helper/utilities';
 import '../components/logViews/logCharts';
 import '../components/logViews/logTimeline';
 
@@ -21,6 +22,8 @@ class LogView extends connect(store)(LitElement) {
   connectedCallback() {
     super.connectedCallback();
     document.addEventListener('open-workout-form', displayForm);
+    this.circlesArray = new Array(21).fill('');
+    this.referenceDate = new Date(getTodayDate()).getTime();
     // document.dispatchEvent(new CustomEvent('open-workout-form'));
     getTrainingData();
   }
@@ -81,8 +84,39 @@ class LogView extends connect(store)(LitElement) {
           </select>
         </div>
         <div class="view-main">
+          <div
+            id="training-circles"
+            style="height:1em; display:flex; justify-content:space-evenly;align-items:center;"
+          >
+            ${this.circlesArray.map((item, index) => {
+              index -= 20;
+              const workoutKeys = Object.keys(this.workouts);
+              let color = 'grey';
+              for (let i = 0; i < workoutKeys.length; i++) {
+                let diffTime = Math.abs(
+                  this.workouts[workoutKeys[i]].date.getTime() -
+                    (this.referenceDate + index * 86400000)
+                );
+                if (diffTime < 28800000) {
+                  color = 'red';
+                  break;
+                } else if (diffTime > 1900800000) {
+                  break;
+                }
+              }
+              return html`<div
+                style="background-color:${color}; border-radius:50%; width: 3vw; height: 3vw"
+              ></div>`;
+            })}
+          </div>
+          <button
+            style="position:absolute; bottom: 6em; right: 2em; height: 2em; width: 5em;"
+            id="add_workout"
+            @click="${addWorkout}"
+          >
+            Add +
+          </button>
           ${viewHtml}
-          <button id="add_workout" @click="${addWorkout}">Add +</button>
         </div>
       </div>
     `;
