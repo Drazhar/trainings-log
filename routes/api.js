@@ -309,9 +309,8 @@ router.get('/getTraining', requireAuthentication(), (req, res) => {
 });
 
 router.post('/removeExercise', requireAuthentication(), (req, res) => {
-  const userId = req.user.id;
   req.db.query(
-    `DELETE FROM exercise WHERE exercise_id='${req.body.id}' AND user_id='${userId}';`,
+    `DELETE FROM exercise WHERE exercise_id='${req.body.exerciseId}' AND user_id='${req.user.id}';`,
     (error) => {
       if (error) throw error;
       res.sendStatus(200);

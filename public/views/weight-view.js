@@ -15,6 +15,7 @@ import {
   axisBottom,
 } from 'd3';
 import { getMovingAverage } from '../src/movingAverage';
+import { increase, decrease } from '../src/increase_decrease';
 
 class WeightView extends connect(store)(LitElement) {
   static get properties() {
@@ -131,6 +132,8 @@ class WeightView extends connect(store)(LitElement) {
               @change="${this._replaceCommaWeight}"
               isRequired
             />
+            <div for="weight" @click="${increase}">+</div>
+            <div for="weight" @click="${decrease}">-</div>
             <input type="submit" value="Add" @click="${this._handleSubmit}" />
           </form>
           <table

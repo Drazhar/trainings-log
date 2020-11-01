@@ -4,6 +4,7 @@ import { store } from '../src/redux/store';
 import { updateWorkout, deleteWorkout } from '../src/redux/actions';
 import { nanoid } from 'nanoid';
 import { getSqlDate } from '../../routes/api_helper/utilities';
+import { increase, decrease } from '../src/increase_decrease';
 import './timer';
 
 class WorkoutForm extends connect(store)(LitElement) {
@@ -215,6 +216,7 @@ class WorkoutForm extends connect(store)(LitElement) {
                   <tr>
                     <td>Set</td>
                     ${this.exercises[exercise.id].logs.map((logInfo) => {
+                      console.log(logInfo);
                       return html` <td>${logInfo.name}</td> `;
                     })}
                   </tr>
@@ -225,7 +227,7 @@ class WorkoutForm extends connect(store)(LitElement) {
                         ${currentSet.map((setData, dataIndex) => {
                           const placeholder = this.exercises[exercise.id]
                             .lastEntries;
-                          return html`<td>
+                          return html`<td style="display:flex;">
                             <input
                               type="number"
                               id="value_${exIndex}_${setIndex}_${dataIndex}"
@@ -235,6 +237,18 @@ class WorkoutForm extends connect(store)(LitElement) {
                                 : ''}"
                               style="width:20vw"
                             />
+                            <div
+                              for="value_${exIndex}_${setIndex}_${dataIndex}"
+                              @click="${increase}"
+                            >
+                              _+_
+                            </div>
+                            <div
+                              for="value_${exIndex}_${setIndex}_${dataIndex}"
+                              @click="${decrease}"
+                            >
+                              _-_
+                            </div>
                           </td> `;
                         })}
                         <td>
