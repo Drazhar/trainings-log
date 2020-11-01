@@ -33,13 +33,15 @@ class LogView extends connect(store)(LitElement) {
   stateChanged(state) {
     if (this.workouts !== state.workouts) {
       this.workouts = state.workouts;
-      this.exerciseWoData = getExerciseWoData(this.workouts);
     }
     if (this.exercises !== state.exercises) {
       this.exercises = state.exercises;
     }
     if (this.exerciseOrder !== state.exerciseOrder) {
       this.exerciseOrder = state.exerciseOrder;
+    }
+    if (this.exerciseWoData !== state.exerciseWoData) {
+      this.exerciseWoData = state.exerciseWoData;
     }
   }
 
@@ -91,30 +93,6 @@ class LogView extends connect(store)(LitElement) {
 }
 
 customElements.define('log-view', LogView);
-
-function getExerciseWoData(workouts) {
-  let result = {};
-
-  Object.keys(workouts).forEach((woKey) => {
-    const currentWo = workouts[woKey];
-    currentWo.exercises.forEach((ex) => {
-      if (!(ex.id in result)) {
-        result[ex.id] = [];
-      }
-      let sum = new Array(ex.sets[0].length).fill(0);
-      let setCount = 0;
-      ex.sets.forEach((set) => {
-        set.forEach((value, index) => {
-          sum[index] += value;
-        });
-        setCount++;
-      });
-      result[ex.id].push([currentWo.date, [...sum], setCount]);
-    });
-  });
-
-  return result;
-}
 
 export function addWorkout(e) {
   let woId = e.target.id.split('+');

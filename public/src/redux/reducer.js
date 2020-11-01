@@ -7,6 +7,7 @@ import {
   SET_WORKOUTS,
   DELETE_WORKOUT,
   REMOVE_WEIGHT,
+  SET_EX_WO_DATA,
 } from './actions';
 import { reorderWorkouts } from './utilities/reorderWorkouts';
 
@@ -100,6 +101,10 @@ export function reducer(state = INITIAL_STATE, action) {
       });
       delete resultRemWo.workouts[action.workoutId];
       return resultRemWo;
+    case SET_EX_WO_DATA:
+      return Object.assign({}, state, {
+        exerciseWoData: action.exerciseWoData,
+      });
     default:
       return state;
   }

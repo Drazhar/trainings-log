@@ -3,7 +3,6 @@ import { connect } from 'pwa-helpers';
 import { store } from '../src/redux/store';
 import { updateExercise } from '../src/redux/actions';
 import { nanoid } from 'nanoid';
-import { backendAddress } from '../src/env';
 
 class ExerciseForm extends connect(store)(LitElement) {
   static get properties() {
@@ -75,16 +74,6 @@ class ExerciseForm extends connect(store)(LitElement) {
     };
 
     updateExercise(exerciseObj);
-
-    // SEND TO BACKEND FOR DATABASE
-    fetch(`${backendAddress}/api/editExercise`, {
-      method: 'POST',
-      credentials: 'include',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(exerciseObj),
-    });
 
     this._closeForm();
   }

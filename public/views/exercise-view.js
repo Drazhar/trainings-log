@@ -4,7 +4,6 @@ import { store } from '../src/redux/store';
 import '../components/exerciseForm';
 import { displayForm } from '../src/eventListener/openCloseForms';
 import { getTrainingData, removeExercise } from '../src/redux/actions';
-import { backendAddress } from '../src/env';
 
 class ExerciseView extends connect(store)(LitElement) {
   static get properties() {
@@ -41,14 +40,6 @@ class ExerciseView extends connect(store)(LitElement) {
 
   _removeExercise(e) {
     const id = e.target.id.split('+')[1];
-    fetch(`${backendAddress}/api/removeExercise`, {
-      method: 'POST',
-      credentials: 'include',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ id }),
-    });
 
     removeExercise(id);
   }

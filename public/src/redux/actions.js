@@ -13,6 +13,8 @@ export const REMOVE_EXERCISE = 'REMOVE_EXERCISE';
 export const SET_WORKOUTS = 'SET_WORKOUTS';
 export const DELETE_WORKOUT = 'DELETE_WORKOUT';
 
+export const SET_EX_WO_DATA = 'SET_EX_WO_DATA';
+
 export function updateUserAuthenticated(isUserAuthenticated) {
   return {
     type: UPDATE_USER_AUTHENTICATED,
@@ -87,16 +89,6 @@ export function removeWeight(log_date) {
   });
 }
 
-export function updateExercise(exerciseData) {
-  store.dispatch({ type: SET_EXERCISES, exerciseData });
-}
-
-export function removeExercise(exerciseId) {
-  store.dispatch({ type: REMOVE_EXERCISE, exerciseId });
-}
-
-export function getExercises() {}
-
 export function getTrainingData() {
   let fetchURL = `${backendAddress}/api/getTraining`;
 
@@ -123,27 +115,59 @@ export function getTrainingData() {
       });
       store.dispatch({ type: SET_WORKOUTS, workoutData: data.workouts });
 
-      let exerciseData = {};
-      data.exercises.forEach((item) => {
-        exerciseData[item.id] = {
-          name: item.name,
-          color: item.color,
-          description: item.description,
-          logs: item.logs,
-          count: parseInt(item.count),
-          lastUsed: new Date(item.lastUsed),
-        };
-      });
-      store.dispatch({ type: SET_EXERCISES, exerciseData });
+      updateWoDataExLastEntries(data.workouts, data.exercises);
     });
+}
+
+export function updateExercise(exerciseData) {
+  store.dispatch({ type: SET_EXERCISES, exerciseData });
+
+  // SEND TO BACKEND FOR DATABASE
+  fetch(`${backendAddress}/api/editExercise`, {
+    method: 'POST',
+    credentials: 'include',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(exerciseData),
+  });
+}
+
+export function removeExercise(exerciseId) {
+  store.dispatch({ type: REMOVE_EXERCISE, exerciseId });
+
+  fetch(`${backendAddress}/api/removeExercise`, {
+    method: 'POST',
+    credentials: 'include',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ exerciseId }),
+  });
 }
 
 export function updateWorkout(workoutData) {
   store.dispatch({ type: SET_WORKOUTS, workoutData });
+
+  const storeData = store.getState();
+  updateWoDataExLastEntries(storeData.workouts, storeData.exercises);
+
+  // SEND TO BACKEND FOR DATABASE
+  fetch(`${backendAddress}/api/editWorkout`, {
+    method: 'POST',
+    credentials: 'include',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(workoutData),
+  });
 }
 
 export function deleteWorkout(workoutId) {
   store.dispatch({ type: DELETE_WORKOUT, workoutId });
+
+  const storeData = store.getState();
+  updateWoDataExLastEntries(storeData.workouts, storeData.exercises);
 
   fetch(`${backendAddress}/api/removeWorkout`, {
     method: 'POST',
@@ -153,4 +177,69 @@ export function deleteWorkout(workoutId) {
     },
     body: JSON.stringify({ workoutId }),
   });
+}
+
+function getExerciseWoData(workouts) {
+  let result = {};
+  let lastEntries = {};
+
+  Object.keys(workouts).forEach((woKey) => {
+    const currentWo = workouts[woKey];
+    currentWo.exercises.forEach((ex) => {
+      if (!(ex.id in result)) {
+        result[ex.id] = [];
+        lastEntries[ex.id] = ex.sets;
+      }
+      let sum = new Array(ex.sets[0].length).fill(0);
+      let setCount = 0;
+      // console.log(ex.sets);
+      ex.sets.forEach((set) => {
+        set.forEach((value, index) => {
+          sum[index] += value;
+        });
+        setCount++;
+      });
+      result[ex.id].push([currentWo.date, [...sum], setCount]);
+    });
+  });
+
+  return [result, lastEntries];
+}
+
+function updateWoDataExLastEntries(workoutInputData, exerciseInputData) {
+  const resultGetExWoData = getExerciseWoData(workoutInputData);
+
+  store.dispatch({
+    type: SET_EX_WO_DATA,
+    exerciseWoData: resultGetExWoData[0],
+  });
+
+  let exerciseData = {};
+  if (exerciseInputData.length) {
+    exerciseInputData.forEach((item) => {
+      exerciseData[item.id] = {
+        name: item.name,
+        color: item.color,
+        description: item.description,
+        logs: item.logs,
+        count: parseInt(item.count),
+        lastUsed: new Date(item.lastUsed),
+        lastEntries: resultGetExWoData[1][item.id],
+      };
+    });
+  } else {
+    Object.keys(exerciseInputData).forEach((exId) => {
+      exerciseData[exId] = {
+        name: exerciseInputData[exId].name,
+        color: exerciseInputData[exId].color,
+        description: exerciseInputData[exId].description,
+        logs: exerciseInputData[exId].logs,
+        count: parseInt(exerciseInputData[exId].count),
+        lastUsed: new Date(exerciseInputData[exId].lastUsed),
+        lastEntries: resultGetExWoData[1][exId],
+      };
+    });
+  }
+
+  store.dispatch({ type: SET_EXERCISES, exerciseData });
 }

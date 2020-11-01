@@ -3,7 +3,6 @@ import { connect } from 'pwa-helpers';
 import { store } from '../src/redux/store';
 import { updateWorkout, deleteWorkout } from '../src/redux/actions';
 import { nanoid } from 'nanoid';
-import { backendAddress } from '../src/env';
 import { getSqlDate } from '../../routes/api_helper/utilities';
 import './timer';
 
@@ -15,6 +14,7 @@ class WorkoutForm extends connect(store)(LitElement) {
       woId: { type: String },
       newWo: { type: Boolean },
       exerciseOrder: { type: Array },
+      exerciseWoData: { type: Object },
     };
   }
 
@@ -22,9 +22,11 @@ class WorkoutForm extends connect(store)(LitElement) {
     if (this.exercises !== state.exercises) {
       this.exercises = state.exercises;
     }
-
     if (this.exerciseOrder !== state.exerciseOrder) {
       this.exerciseOrder = state.exerciseOrder;
+    }
+    if (this.exerciseWoData !== state.exerciseWoData) {
+      this.exerciseWoData = state.exerciseWoData;
     }
   }
 
@@ -87,6 +89,7 @@ class WorkoutForm extends connect(store)(LitElement) {
     this.currentWorkout.exercises[id].sets[0] = new Array(
       this.exercises[exerciseId].logs.length
     ).fill(0);
+    console.log(this.exerciseWoData[exerciseId][0]);
   }
 
   _removeExercise(e) {
@@ -145,16 +148,6 @@ class WorkoutForm extends connect(store)(LitElement) {
     updateWorkout(reduxObj);
 
     this.requestUpdate(this.currentWorkout, '');
-
-    // SEND TO BACKEND FOR DATABASE
-    fetch(`${backendAddress}/api/editWorkout`, {
-      method: 'POST',
-      credentials: 'include',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(reduxObj),
-    });
 
     this._closeForm();
   }
