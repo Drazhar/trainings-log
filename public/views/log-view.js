@@ -95,14 +95,13 @@ class LogView extends connect(store)(LitElement) {
               const workoutKeys = Object.keys(this.workouts);
               let color = 'rgba(200,200,200,0.25)';
               for (let i = 0; i < workoutKeys.length; i++) {
-                let diffTime = Math.abs(
+                let diffTime =
                   this.workouts[workoutKeys[i]].date.getTime() -
-                    (this.referenceDate + index * 86400000)
-                );
-                if (diffTime < 28800000) {
-                  color = '#29a6c9';
+                  (this.referenceDate + index * 86400000);
+                if (diffTime < -28800000) {
                   break;
-                } else if (diffTime > 1900800000) {
+                } else if (diffTime < 28800000) {
+                  color = '#29a6c9';
                   break;
                 }
               }
