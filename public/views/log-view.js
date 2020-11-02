@@ -70,6 +70,8 @@ class LogView extends connect(store)(LitElement) {
         ></log-charts>`;
     }
 
+    const circleDecayExponent = (0.2 - 1) / 20 ** 2;
+
     return html`
       <div class="view-wrapper">
         <div class="view-header">
@@ -91,21 +93,22 @@ class LogView extends connect(store)(LitElement) {
             ${this.circlesArray.map((item, index) => {
               index -= 20;
               const workoutKeys = Object.keys(this.workouts);
-              let color = 'grey';
+              let color = 'rgba(200,200,200,0.25)';
               for (let i = 0; i < workoutKeys.length; i++) {
                 let diffTime = Math.abs(
                   this.workouts[workoutKeys[i]].date.getTime() -
                     (this.referenceDate + index * 86400000)
                 );
                 if (diffTime < 28800000) {
-                  color = 'red';
+                  color = '#29a6c9';
                   break;
                 } else if (diffTime > 1900800000) {
                   break;
                 }
               }
+              const opacity = circleDecayExponent * index ** 2 + 1;
               return html`<div
-                style="background-color:${color}; border-radius:50%; width: 3vw; height: 3vw"
+                style="background-color:${color}; border-radius:50%; width: 3vw; height: 3vw; opacity: ${opacity}"
               ></div>`;
             })}
           </div>
@@ -118,6 +121,7 @@ class LogView extends connect(store)(LitElement) {
           </button>
           ${viewHtml}
         </div>
+        <div style="height:4em"></div>
       </div>
     `;
   }

@@ -34,7 +34,7 @@ class logCharts extends connect(store)(LitElement) {
                       .color="${this.exercises[exInfo[0]].color}"
                     ></log-chart>
                     <table
-                      style="background-color:red;width:30%;min-width:50px;max-width:150px;overflow:hidden"
+                      style="width:30%;min-width:50px;max-width:150px;overflow:hidden; color:#f0f0f0"
                     >
                       <tbody>
                         <tr>
