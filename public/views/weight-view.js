@@ -28,6 +28,7 @@ class WeightView extends connect(store)(LitElement) {
   connectedCallback() {
     super.connectedCallback();
     this._updateWeight();
+    this.chartCreated = false;
   }
 
   _updateWeight() {
@@ -170,56 +171,38 @@ class WeightView extends connect(store)(LitElement) {
   }
 
   updated() {
-    this.createChart();
+    const env = this.getChartParameters();
+    if (!this.chartCreated) {
+      this.createChart(env);
+      this.chartCreated = true;
+    } else {
+      this.updateChart(env);
+    }
   }
 
-  createChart() {
-    const chartArea = document.getElementById('weight-chart');
-    chartArea.innerHTML = ''; // delete old chart
+  getChartParameters() {
+    let env = {};
+    env.chartArea = document.getElementById('weight-chart');
 
-    const margin = { top: 15, right: 20, bottom: 20, left: 20 };
-    const width = chartArea.clientWidth - margin.left - margin.right;
-    const height = 300 - margin.top - margin.bottom;
+    env.margin = { top: 15, right: 20, bottom: 20, left: 20 };
+    env.width = env.chartArea.clientWidth - env.margin.left - env.margin.right;
+    env.height = 300 - env.margin.top - env.margin.bottom;
 
-    // Create the chart itself
-    const svg = select(chartArea)
-      .append('svg')
-      .attr('width', width + margin.left + margin.right)
-      .attr('height', height + margin.top + margin.bottom)
-      .append('g')
-      .attr('transform', `translate(${margin.left},${margin.top})`);
-
-    // X SCALE
-    // const x = scaleTime()
-    //   .range([0, width])
-    //   .domain([
-    //     min(this.weightData, (d) => d.date),
-    //     max(this.weightData, (d) => d.date),
-    //   ]);
-
+    env.lastDate = new Date();
     const tickCount = 20;
     const tickCountShow = tickCount - 5;
-    // const lastDate = new Date(this.weightData[this.weightData.length -
-    // 1].date);
-    const lastDate = new Date();
-    const diffToday = Math.floor((new Date() - lastDate) / 86400000);
-    const x = scalePow()
-      .exponent(0.5)
-      .range([0, width])
-      .domain([
-        // min(this.weightData, (d) => (d.date - lastDate) / 86400000),
-        -365,
-        max(this.weightData, (d) => (d.log_date - lastDate) / 86400000) + 14,
-      ]);
-    svg
-      .append('defs')
-      .append('clipPath')
-      .attr('id', 'clip')
-      .append('rect')
-      .attr('width', width)
-      .attr('height', height);
+    const diffToday = Math.floor((new Date() - env.lastDate) / 86400000);
 
-    // Y SCALE
+    // DEFINE AXIS
+    env.x = scalePow()
+      .exponent(0.5)
+      .range([0, env.width])
+      .domain([
+        -365,
+        max(this.weightData, (d) => (d.log_date - env.lastDate) / 86400000) +
+          14,
+      ]);
+
     let yMax = Math.ceil(max(this.weightData, (d) => d.weight));
     yMax = Math.ceil(yMax * 1.01);
     let yMin = Math.floor(min(this.weightData, (d) => d.weight));
@@ -228,60 +211,116 @@ class WeightView extends connect(store)(LitElement) {
     } else {
       yMin = Math.floor(yMin * 0.99);
     }
-    const y = scaleLinear().range([height, 0]).domain([yMin, yMax]);
+    env.y = scaleLinear().range([env.height, 0]).domain([yMin, yMax]);
+
+    // DEFINE AXIS SETTINGS
+    env.xAxisSettings = axisBottom(env.x)
+      .ticks(tickCount)
+      .tickSize(-env.height)
+      .tickFormat((d, i) => {
+        if (i >= tickCountShow) {
+          return d - diffToday;
+        } else if (i % 4 === 0) {
+          return d - diffToday;
+        }
+      });
+
+    env.yAxisSettings = axisLeft(env.y).ticks(4).tickSize(-env.width);
+
+    // DEFINE LINE
+    env.lineSmooth = line()
+      .x((d) => env.x((d.log_date - env.lastDate) / 86400000))
+      .y((d) => env.y(d.weight))
+      .curve(curveBasis);
+
+    env.dotXFunction = (d) => {
+      return env.x((d.log_date - env.lastDate) / 86400000);
+    };
+
+    return env;
+  }
+
+  createChart(env) {
+    // Create the chart itself
+    this.svg = select(env.chartArea)
+      .append('svg')
+      .attr('width', env.width + env.margin.left + env.margin.right)
+      .attr('height', env.height + env.margin.top + env.margin.bottom)
+      .append('g')
+      .attr('transform', `translate(${env.margin.left},${env.margin.top})`);
+
+    this.svg
+      .append('defs')
+      .append('clipPath')
+      .attr('id', 'clip')
+      .append('rect')
+      .attr('width', env.width)
+      .attr('height', env.height);
 
     // CREATE DOTS
-    svg
+    this.svg
       .selectAll('dot')
       .data(this.weightData)
       .enter()
       .append('circle')
       .attr('r', 2)
-      .attr('cx', (d) => {
-        return x((d.log_date - lastDate) / 86400000);
-      })
-      .attr('cy', (d) => y(d.weight))
-      .attr('fill', `RGBA(240,240,240,0.3)`)
-      .append('svg:title')
-      .text((d, i) => `blabla`);
+      .attr('cx', env.dotXFunction)
+      .attr('cy', (d) => env.y(d.weight));
 
     // CREATE LINE
-    const lineSmooth = line()
-      .x((d) => x((d.log_date - lastDate) / 86400000))
-      .y((d) => y(d.weight))
-      .curve(curveBasis);
-
-    svg
+    this.trendLine = this.svg
       .append('path')
       .attr('clip-path', 'url(#clip)')
-      .attr('d', lineSmooth(this.movingAverage))
+      .attr('d', env.lineSmooth(this.movingAverage))
       .attr('stroke', '#29a6c9')
       .attr('stroke-width', 3)
       .attr('fill', 'none')
       .attr('stroke-linejoin', 'round');
 
-    // X and Y axis
-    svg
+    // CREATE AXIS
+    this.xAxis = this.svg
       .append('g')
-      .attr('transform', `translate(0,${height})`)
-      .call(
-        axisBottom(x)
-          .ticks(tickCount)
-          .tickSize(-height)
-          .tickFormat((d, i) => {
-            if (i >= tickCountShow) {
-              return d - diffToday;
-            } else if (i % 4 === 0) {
-              return d - diffToday;
-            }
-          })
-      )
+      .attr('transform', `translate(0,${env.height})`)
+      .call(env.xAxisSettings)
       .attr('color', 'lightgrey');
 
-    svg
+    this.yAxis = this.svg
       .append('g')
-      .call(axisLeft(y).ticks(4).tickSize(-width))
+      .call(env.yAxisSettings)
       .attr('color', 'lightgrey');
+  }
+
+  updateChart(env) {
+    const transitionTime = 400;
+
+    // UPDATE DOTS
+    const dots = this.svg.selectAll('circle').data(this.weightData);
+    dots // Update position of old circles if axis changes
+      .transition()
+      .duration(transitionTime)
+      .attr('cx', env.dotXFunction)
+      .attr('cy', (d) => env.y(d.weight));
+
+    dots.exit().transition().duration(transitionTime).attr('r', 0).remove();
+    dots
+      .enter()
+      .append('circle')
+      .attr('r', 0)
+      .attr('cx', env.dotXFunction)
+      .attr('cy', (d) => env.y(d.weight))
+      .transition()
+      .duration(transitionTime)
+      .attr('r', 2);
+
+    // UPDATE LINE
+    this.trendLine
+      .transition()
+      .duration(transitionTime)
+      .attr('d', env.lineSmooth(this.movingAverage));
+
+    // UPDATE AXIS
+    this.xAxis.transition().duration(transitionTime).call(env.xAxisSettings);
+    this.yAxis.transition().duration(transitionTime).call(env.yAxisSettings);
   }
 
   createRenderRoot() {
