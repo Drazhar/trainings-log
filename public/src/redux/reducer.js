@@ -40,9 +40,9 @@ export function reducer(state = INITIAL_STATE, action) {
     case REMOVE_WEIGHT:
       let newWeightDataRemove = [...state.weightData];
       for (let i = newWeightDataRemove.length - 1; i >= 0; i--) {
-        if (
-          newWeightDataRemove[i].log_date.getTime() == action.log_date.getTime()
-        ) {
+        const timeA = newWeightDataRemove[i].log_date.getTime();
+        const timeB = action.log_date.getTime();
+        if (timeA >= timeB - 28800000 || timeA <= timeB + 28800000) {
           newWeightDataRemove.splice(i, 1);
           break;
         }
