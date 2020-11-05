@@ -52,10 +52,11 @@ class LoginIcon extends connect(store)(LitElement) {
             <span>Login</span>
           </button>`
         : html`<div class="avatar-icon">
-            <img
-              src="https://api.adorable.io/avatars/40/${this.userID}.png"
-              alt="user icon"
-            />
+            <div
+              style="border-radius: 50%; background-color: RGBA(255,255,255,0.4); width: 1.5em; height: 1.5em; display: flex; align-items: center; justify-content: center;"
+            >
+              :)
+            </div>
           </div>`}
     `;
   }
