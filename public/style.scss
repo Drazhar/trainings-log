@@ -234,6 +234,10 @@ nav {
   .tick line {
     stroke: rgba(var(--max-white-rgb), 0.2);
   }
+
+  circle {
+    fill: RGBA(240, 240, 240, 0.3);
+  }
 }
 
 #add_exercise {
