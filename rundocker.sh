@@ -1,3 +1,3 @@
-docker-compose up -d
+docker-compose up -d --build
 
 chmod ugo+rx -R postgres-data
