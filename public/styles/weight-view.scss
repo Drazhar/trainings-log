@@ -1,0 +1,43 @@
+@use './globalVars';
+
+#weight-chart {
+  background-color: rgba(var(--max-white-rgb), 0.1);
+
+  .tick line {
+    stroke: rgba(var(--max-white-rgb), 0.2);
+  }
+
+  circle {
+    fill: RGBA(240, 240, 240, 0.3);
+  }
+}
+
+.input-weight {
+  color: var(--max-white);
+  display: flex;
+  margin: 0.5em 0 1em 0;
+  align-items: center;
+  justify-content: space-evenly;
+
+  #weight {
+    width: 5em;
+    font-size: 1em;
+  }
+
+  #date {
+    width: 9em;
+  }
+}
+
+#weight-info-zone {
+  background-color: rgba(var(--max-white-rgb), 0.1);
+  font-size: 0.9em;
+
+  td:nth-child(2n - 1) {
+    color: RGBA(var(--max-white-rgb), 0.7);
+  }
+
+  td:nth-child(2n) {
+    color: var(--max-white);
+  }
+}

@@ -1,4 +1,5 @@
 @use 'styles/globalVars';
+@use 'styles/weight-view';
 @use 'styles/exerciseForm';
 @use 'styles/workoutView';
 
@@ -208,35 +209,6 @@ nav {
 
   .view-main {
     overflow-y: scroll;
-  }
-}
-
-.input-weight {
-  color: var(--max-white);
-  display: flex;
-  margin: 0.5em 0 1em 0;
-  align-items: center;
-  justify-content: space-evenly;
-
-  #weight {
-    width: 5em;
-    font-size: 1em;
-  }
-
-  #date {
-    width: 9em;
-  }
-}
-
-#weight-chart {
-  background-color: rgba(var(--max-white-rgb), 0.15);
-
-  .tick line {
-    stroke: rgba(var(--max-white-rgb), 0.2);
-  }
-
-  circle {
-    fill: RGBA(240, 240, 240, 0.3);
   }
 }
 
