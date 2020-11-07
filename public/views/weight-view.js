@@ -73,7 +73,7 @@ class WeightView extends connect(store)(LitElement) {
   stateChanged(state) {
     if (this.weightData !== state.weightData) {
       this.weightData = state.weightData;
-      this.movingAverage = getMovingAverage(this.weightData, 13);
+      this.movingAverage = getMovingAverage(this.weightData, 15);
       this.weightRate = this._getDataForWeightRegression(this.weightData, 7);
 
       // Sometimes the state is changed before the view is connected...
@@ -103,7 +103,6 @@ class WeightView extends connect(store)(LitElement) {
         }
       }
 
-      console.log(output);
       return linearRegression(output).m * 86400000 * days;
     }
     return 'na';
@@ -115,6 +114,7 @@ class WeightView extends connect(store)(LitElement) {
 
   _updateDefaultWeight() {
     if (this.weightData.length > 0) {
+      console.log(document.getElementById('date'));
       const currentDate = new Date(document.getElementById('date').value);
       for (let i = this.weightData.length - 1; i > 0; i--) {
         if (currentDate.getTime() >= this.weightData[i].log_date.getTime()) {
@@ -157,14 +157,7 @@ class WeightView extends connect(store)(LitElement) {
               isRequired
             />
             <!-- <label for="weight">Weight</label> -->
-            <input
-              type="number"
-              id="weight"
-              min="0"
-              step="0.1"
-              @change="${this._replaceCommaWeight}"
-              isRequired
-            />
+            <input type="number" id="weight" min="0" step="0.1" isRequired />
             <div class="woIncDecBut" for="weight" @click="${increase}">+</div>
             <div class="woIncDecBut" for="weight" @click="${decrease}">-</div>
             <input type="submit" value="Add" @click="${this._handleSubmit}" />
@@ -236,6 +229,9 @@ class WeightView extends connect(store)(LitElement) {
     if (!this.chartCreated) {
       this.createChart(env);
       this.chartCreated = true;
+      try {
+        this._updateDefaultWeight();
+      } catch {}
     } else {
       this.updateChart(env);
     }
@@ -298,6 +294,16 @@ class WeightView extends connect(store)(LitElement) {
       return env.x((d.log_date - env.lastDate) / 86400000);
     };
 
+    // GENERATE ARRAY FOR THE FORECAST
+    const recentMovingAvg = this.movingAverage[this.movingAverage.length - 1];
+    env.forecastData = [];
+    for (let i = 0; i <= 24; i += 0.5) {
+      env.forecastData.push([
+        (recentMovingAvg.log_date - env.lastDate) / 86400000 + i,
+        (this.weightRate / 7) * i + recentMovingAvg.weight,
+      ]);
+    }
+
     return env;
   }
 
@@ -339,14 +345,6 @@ class WeightView extends connect(store)(LitElement) {
       .attr('stroke-linejoin', 'round');
 
     // CREATE FORECAST LINE
-    const recentMovingAvg = this.movingAverage[this.movingAverage.length - 1];
-    const forecastData = [];
-    for (let i = 0; i <= 24; i += 0.1) {
-      forecastData.push([
-        (recentMovingAvg.log_date - env.lastDate) / 86400000 + i,
-        (this.weightRate / 7) * i + recentMovingAvg.weight,
-      ]);
-    }
     this.forecastLine = this.svg
       .append('path')
       .attr('clip-path', 'url(#clip)')
@@ -354,7 +352,7 @@ class WeightView extends connect(store)(LitElement) {
         'd',
         line()
           .x((d) => env.x(d[0]))
-          .y((d) => env.y(d[1]))(forecastData)
+          .y((d) => env.y(d[1]))(env.forecastData)
       )
       .attr('stroke', 'rgba(41,166,201,0.2)')
       .attr('stroke-width', 3)
@@ -402,23 +400,16 @@ class WeightView extends connect(store)(LitElement) {
       .duration(transitionTime)
       .attr('d', env.lineSmooth(this.movingAverage));
 
-    // // UPDATE FORECAST LINE
-    // const recentMovingAvg = this.movingAverage[this.movingAverage.length - 1];
-    // this.forecastLine
-    //   .transition()
-    //   .duration(transitionTime)
-    //   .attr(
-    //     'd',
-    //     line()
-    //       .x((d) => env.x(d[0]))
-    //       .y((d) => env.y(d[1]))([
-    //       [
-    //         (recentMovingAvg.log_date - env.lastDate) / 86400000,
-    //         recentMovingAvg.weight,
-    //       ],
-    //       [7, this.weightRate + recentMovingAvg.weight],
-    //     ])
-    //   );
+    // UPDATE FORECAST LINE
+    this.forecastLine
+      .transition()
+      .duration(transitionTime)
+      .attr(
+        'd',
+        line()
+          .x((d) => env.x(d[0]))
+          .y((d) => env.y(d[1]))(env.forecastData)
+      );
 
     // UPDATE AXIS
     this.xAxis.transition().duration(transitionTime).call(env.xAxisSettings);
