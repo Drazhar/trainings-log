@@ -24,6 +24,9 @@ class WeightView extends connect(store)(LitElement) {
       weightData: { type: Array },
       movingAverage: { type: Array },
       weightRate: { type: Array },
+      chartX: { type: Number },
+      referenceDate: { type: Number },
+      chartZeroPos: { type: Number },
     };
   }
 
@@ -31,6 +34,10 @@ class WeightView extends connect(store)(LitElement) {
     super.connectedCallback();
     this._updateWeight();
     this.chartCreated = false;
+    this.chartX = -365;
+    this.transitionTime = 400;
+    this.referenceDate = new Date().getTime();
+    this.chartZeroPos = 0.94;
   }
 
   _updateWeight() {
@@ -114,7 +121,6 @@ class WeightView extends connect(store)(LitElement) {
 
   _updateDefaultWeight() {
     if (this.weightData.length > 0) {
-      console.log(document.getElementById('date'));
       const currentDate = new Date(document.getElementById('date').value);
       for (let i = this.weightData.length - 1; i > 0; i--) {
         if (currentDate.getTime() >= this.weightData[i].log_date.getTime()) {
@@ -123,6 +129,35 @@ class WeightView extends connect(store)(LitElement) {
         }
       }
     }
+  }
+
+  _scrollChartStart(e) {
+    this.chartTouchStart = e.touches[0].clientX;
+    // this.chartXStart = this.chartX;
+    this.referenceDateStart = this.referenceDate;
+    this.chartZeroPosStart = this.chartZeroPos;
+    this.transitionTime = 0;
+  }
+
+  _scrollChart(e) {
+    const moveAmount = this.chartTouchStart - e.touches[0].clientX;
+
+    // this.chartZeroPos = this.chartZeroPosStart + moveAmount / 200;
+
+    // if (this.chartZeroPos < 0.5) {
+    //   this.chartZeroPos = 0.5;
+    // } else if (this.chartZeroPos > 1) {
+    //   this.chartZeroPos = 1;
+    // }
+
+    this.referenceDate = this.referenceDateStart + moveAmount * 86400000;
+    if (this.referenceDate > new Date().getTime()) {
+      this.referenceDate = new Date().getTime();
+    }
+  }
+
+  _scrollChartEnd() {
+    this.transitionTime = 400;
   }
 
   render() {
@@ -146,22 +181,11 @@ class WeightView extends connect(store)(LitElement) {
           </select>
         </div>
         <div class="view-main">
-          <div id="weight-chart"></div>
-          <form class="input-weight">
-            <!-- <label for="date">Date </label> -->
-            <input
-              type="date"
-              id="date"
-              value="${getTodayDate()}"
-              @change="${this._updateDefaultWeight}"
-              isRequired
-            />
-            <!-- <label for="weight">Weight</label> -->
-            <input type="number" id="weight" min="0" step="0.1" isRequired />
-            <div class="woIncDecBut" for="weight" @click="${increase}">+</div>
-            <div class="woIncDecBut" for="weight" @click="${decrease}">-</div>
-            <input type="submit" value="Add" @click="${this._handleSubmit}" />
-          </form>
+          <div
+            id="weight-chart"
+            @touchmove="${this._scrollChart}"
+            @touchstart="${this._scrollChartStart}"
+          ></div>
           <div id="weight-info-zone">
             <table style="width: 100%">
               <colgroup>
@@ -191,6 +215,19 @@ class WeightView extends connect(store)(LitElement) {
               </tr>
             </table>
           </div>
+          <form class="input-weight">
+            <input
+              type="date"
+              id="date"
+              value="${getTodayDate()}"
+              @change="${this._updateDefaultWeight}"
+              isRequired
+            />
+            <input type="number" id="weight" min="0" step="0.1" isRequired />
+            <div class="woIncDecBut" for="weight" @click="${increase}">+</div>
+            <div class="woIncDecBut" for="weight" @click="${decrease}">-</div>
+            <input type="submit" value="Add" @click="${this._handleSubmit}" />
+          </form>
           <table
             id="weightRawData"
             style="color:white; width:99%; margin-top: 1em"
@@ -245,7 +282,7 @@ class WeightView extends connect(store)(LitElement) {
     env.width = env.chartArea.clientWidth - env.margin.left - env.margin.right;
     env.height = 300 - env.margin.top - env.margin.bottom;
 
-    env.lastDate = new Date();
+    env.lastDate = this.referenceDate;
     const tickCount = 20;
     const tickCountShow = tickCount - 5;
     const diffToday = Math.floor((new Date() - env.lastDate) / 86400000);
@@ -255,9 +292,8 @@ class WeightView extends connect(store)(LitElement) {
       .exponent(0.5)
       .range([0, env.width])
       .domain([
-        -365,
-        max(this.weightData, (d) => (d.log_date - env.lastDate) / 86400000) +
-          14,
+        this.chartX * this.chartZeroPos,
+        -this.chartX * (1 - this.chartZeroPos),
       ]);
 
     let yMax = Math.ceil(max(this.weightData, (d) => d.weight));
@@ -373,10 +409,18 @@ class WeightView extends connect(store)(LitElement) {
   }
 
   updateChart(env) {
-    const transitionTime = 400;
+    const transitionTime = this.transitionTime;
 
     // UPDATE DOTS
-    const dots = this.svg.selectAll('circle').data(this.weightData);
+    const dots = this.svg.selectAll('circle').data(
+      this.weightData.filter((item) => {
+        const currentDate = (item.log_date - env.lastDate) / 86400000;
+        return (
+          currentDate >= this.chartX * this.chartZeroPos &&
+          currentDate <= -this.chartX * (1 - this.chartZeroPos)
+        );
+      })
+    );
     dots // Update position of old circles if axis changes
       .transition()
       .duration(transitionTime)
