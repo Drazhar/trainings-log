@@ -287,6 +287,10 @@ class WeightView extends connect(store)(LitElement) {
     const tickCountShow = tickCount - 5;
     const diffToday = Math.floor((new Date() - env.lastDate) / 86400000);
 
+    env.keyFunction = (d) => {
+      return d.log_date;
+    };
+
     // DEFINE AXIS
     env.x = scalePow()
       .exponent(0.5)
@@ -363,7 +367,7 @@ class WeightView extends connect(store)(LitElement) {
     // CREATE DOTS
     this.svg
       .selectAll('dot')
-      .data(this.weightData)
+      .data(this.weightData, env.keyFunction)
       .enter()
       .append('circle')
       .attr('r', 2)
@@ -419,7 +423,8 @@ class WeightView extends connect(store)(LitElement) {
           currentDate >= this.chartX * this.chartZeroPos &&
           currentDate <= -this.chartX * (1 - this.chartZeroPos)
         );
-      })
+      }),
+      env.keyFunction
     );
     dots // Update position of old circles if axis changes
       .transition()
