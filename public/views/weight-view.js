@@ -32,24 +32,12 @@ class WeightView extends connect(store)(LitElement) {
 
   connectedCallback() {
     super.connectedCallback();
-    this._updateWeight();
+    getWeightData();
     this.chartCreated = false;
     this.chartX = -365;
     this.transitionTime = 400;
     this.referenceDate = new Date().getTime();
     this.chartZeroPos = 0.94;
-  }
-
-  _updateWeight() {
-    let range = document.getElementById('weightRange');
-
-    if (range === null) {
-      range = 1;
-    } else {
-      range = parseInt(range.value);
-    }
-
-    getWeightData();
   }
 
   _handleSubmit(e) {
@@ -161,13 +149,20 @@ class WeightView extends connect(store)(LitElement) {
   }
 
   render() {
+    const latestData = this.weightData[this.weightData.length - 1];
     const currentTrend = this.movingAverage[this.movingAverage.length - 1]
       .weight;
-    const latestWeight = this.weightData[this.weightData.length - 1].weight;
+    const latestWeight = latestData.weight;
+
+    let lastYear = 0;
+    let lastMonth = -1;
+
+    const reversedAvg = [...this.movingAverage].reverse();
+
     return html`
       <div class="view-wrapper">
         <div class="view-header">
-          <label for="weightRange" style="color:white">Max range: </label>
+          <!-- <label for="weightRange" style="color:white">Max range: </label>
           <select
             name="weightRange"
             id="weightRange"
@@ -178,7 +173,7 @@ class WeightView extends connect(store)(LitElement) {
             <option value="6">6 Month</option>
             <option value="12">1 Year</option>
             <option value="0">all</option>
-          </select>
+          </select> -->
         </div>
         <div class="view-main">
           <div
@@ -228,32 +223,71 @@ class WeightView extends connect(store)(LitElement) {
             <div class="woIncDecBut" for="weight" @click="${decrease}">-</div>
             <input type="submit" value="Add" @click="${this._handleSubmit}" />
           </form>
-          <table
-            id="weightRawData"
-            style="color:white; width:99%; margin-top: 1em"
-          >
-            ${[...this.weightData].reverse().map((entry) => {
-              return html`<tr>
-                <td>
-                  ${entry.log_date.getDate() < 10
-                    ? '0' + entry.log_date.getDate()
-                    : entry.log_date.getDate()}.${entry.log_date.getMonth() +
-                    1 <
-                  10
-                    ? '0' + (entry.log_date.getMonth() + 1)
-                    : entry.log_date.getMonth() +
-                      1}.${entry.log_date.getFullYear()}
-                </td>
-                <td>${entry.weight}</td>
-                <td>
-                  <button
-                    id="rem_${getSqlDate(entry.log_date)}"
-                    @click="${this._handleRemove}"
-                  >
-                    Remove
-                  </button>
-                </td>
-              </tr>`;
+          <table id="weightRawData">
+            ${[...this.weightData].reverse().map((entry, index) => {
+              let addYear = ``;
+              const isAnotherYear = entry.log_date.getFullYear() != lastYear;
+              if (isAnotherYear) {
+                lastYear = entry.log_date.getFullYear();
+                addYear = html`<tr class="weight-year-heading">
+                  <td colspan="4" class="year">${lastYear}</td>
+                </tr>`;
+              }
+              let addMonth = ``;
+              if (entry.log_date.getMonth() != lastMonth || isAnotherYear) {
+                lastMonth = entry.log_date.getMonth();
+                addMonth = html`<tr>
+                  <td colspan="4" class="month">
+                    ${entry.log_date.toLocaleString('default', {
+                      month: 'long',
+                    })}
+                    ${lastYear}
+                  </td>
+                </tr>`;
+              }
+
+              let isLastEntryMonth = false;
+              try {
+                if (
+                  entry.log_date.getMonth() !=
+                  reversedAvg[index + 1].log_date.getMonth()
+                ) {
+                  isLastEntryMonth = true;
+                }
+              } catch {}
+
+              return html`${addYear}${addMonth}
+                <tr class="${isLastEntryMonth ? 'no-border' : 'entry-row'}">
+                  <td class="day-card">
+                    <div style="font-size: 0.7em">
+                      ${entry.log_date.toLocaleString('default', {
+                        weekday: 'short',
+                      })}
+                    </div>
+                    <div>
+                      ${entry.log_date.getDate() < 10
+                        ? '0' + entry.log_date.getDate()
+                        : entry.log_date.getDate()}
+                    </div>
+                  </td>
+                  <td>${entry.weight.toFixed(1)} kg</td>
+                  <td>
+                    <p>
+                      <span class="trend-span">Trend:</span>&nbsp${reversedAvg[
+                        index
+                      ].weight.toFixed(1)}
+                      kg
+                    </p>
+                  </td>
+                  <td>
+                    <button
+                      id="rem_${getSqlDate(entry.log_date)}"
+                      @click="${this._handleRemove}"
+                    >
+                      Remove
+                    </button>
+                  </td>
+                </tr>`;
             })}
           </table>
         </div>

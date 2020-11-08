@@ -41,3 +41,60 @@
     color: var(--max-white);
   }
 }
+
+#weightRawData {
+  color: var(--max-white);
+  width: 99%;
+  border-collapse: collapse;
+
+  td:nth-child(1) {
+    width: 2.5em;
+  }
+  td:nth-child(2) {
+    width: 40%;
+    text-align: left;
+    padding-left: 1em;
+  }
+  td:nth-child(3) {
+    width: 100%;
+    text-align: center;
+  }
+  td:nth-child(4) {
+    width: 10%;
+    text-align: left;
+  }
+
+  .entry-row {
+    border-bottom: 1px solid rgba(var(--max-white-rgb), 0.16);
+  }
+}
+
+.trend-span {
+  color: RGBA(var(--max-white-rgb), 0.7);
+  font-size: 0.9em;
+}
+
+.day-card {
+  background-color: RGBA(var(--max-white-rgb), 0.16);
+  height: 3em;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.month {
+  height: 2em;
+  font-weight: bold;
+  font-size: large;
+  color: RGBA(var(--max-white-rgb), 0.7);
+  padding-left: 0.4em;
+}
+
+.year {
+  height: 1.8em;
+  font-weight: bold;
+  color: RGBA(var(--max-white-rgb), 0.7);
+  padding-left: 0.4em;
+  vertical-align: bottom;
+}
