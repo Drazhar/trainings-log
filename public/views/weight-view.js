@@ -38,6 +38,8 @@ class WeightView extends connect(store)(LitElement) {
     this.transitionTime = 400;
     this.referenceDate = new Date().getTime();
     this.chartZeroPos = 0.94;
+
+    this.lastCall = new Date();
   }
 
   _handleSubmit(e) {
@@ -128,19 +130,24 @@ class WeightView extends connect(store)(LitElement) {
   }
 
   _scrollChart(e) {
-    const moveAmount = this.chartTouchStart - e.touches[0].clientX;
+    if (this.lastCall.getTime() + 100 < new Date().getTime()) {
+      this.lastCall = new Date();
+      const moveAmount = this.chartTouchStart - e.touches[0].clientX;
 
-    // this.chartZeroPos = this.chartZeroPosStart + moveAmount / 200;
+      // this.chartZeroPos = this.chartZeroPosStart + moveAmount / 200;
 
-    // if (this.chartZeroPos < 0.5) {
-    //   this.chartZeroPos = 0.5;
-    // } else if (this.chartZeroPos > 1) {
-    //   this.chartZeroPos = 1;
-    // }
+      // if (this.chartZeroPos < 0.5) {
+      //   this.chartZeroPos = 0.5;
+      // } else if (this.chartZeroPos > 1) {
+      //   this.chartZeroPos = 1;
+      // }
 
-    this.referenceDate = this.referenceDateStart + moveAmount * 86400000;
-    if (this.referenceDate > new Date().getTime()) {
-      this.referenceDate = new Date().getTime();
+      this.referenceDate = this.referenceDateStart + moveAmount * 86400000;
+      if (this.referenceDate > new Date().getTime()) {
+        this.referenceDate = new Date().getTime();
+      } else if (this.referenceDate < this.weightData[0].log_date.getTime()) {
+        this.referenceDate = this.weightData[0].log_date.getTime();
+      }
     }
   }
 
@@ -161,20 +168,7 @@ class WeightView extends connect(store)(LitElement) {
 
     return html`
       <div class="view-wrapper">
-        <div class="view-header">
-          <!-- <label for="weightRange" style="color:white">Max range: </label>
-          <select
-            name="weightRange"
-            id="weightRange"
-            @change="${this._updateWeight}"
-          >
-            <option value="1">1 Month</option>
-            <option value="3">3 Month</option>
-            <option value="6">6 Month</option>
-            <option value="12">1 Year</option>
-            <option value="0">all</option>
-          </select> -->
-        </div>
+        <div class="view-header"></div>
         <div class="view-main">
           <div
             id="weight-chart"
@@ -317,22 +311,22 @@ class WeightView extends connect(store)(LitElement) {
     env.height = 300 - env.margin.top - env.margin.bottom;
 
     env.lastDate = this.referenceDate;
-    const tickCount = 20;
-    const tickCountShow = tickCount - 5;
     const diffToday = Math.floor((new Date() - env.lastDate) / 86400000);
+    const offsetToday = Math.round(
+      (new Date() - new Date(this.referenceDate)) / 86400000
+    );
 
     env.keyFunction = (d) => {
       return d.log_date;
     };
 
     // DEFINE AXIS
+    const chartMin = this.chartX * this.chartZeroPos;
+    const chartMax = -this.chartX * (1 - this.chartZeroPos);
     env.x = scalePow()
       .exponent(0.5)
       .range([0, env.width])
-      .domain([
-        this.chartX * this.chartZeroPos,
-        -this.chartX * (1 - this.chartZeroPos),
-      ]);
+      .domain([chartMin, chartMax]);
 
     let yMax = Math.ceil(max(this.weightData, (d) => d.weight));
     yMax = Math.ceil(yMax * 1.01);
@@ -345,14 +339,45 @@ class WeightView extends connect(store)(LitElement) {
     env.y = scaleLinear().range([env.height, 0]).domain([yMin, yMax]);
 
     // DEFINE AXIS SETTINGS
+    const chartMaxDate = new Date(this.referenceDate);
+    chartMaxDate.setDate(chartMaxDate.getDate() + chartMax);
+    const chartMinDate = new Date(this.referenceDate);
+    chartMinDate.setDate(chartMinDate.getDate() + chartMin);
+    let monthCount =
+      (chartMaxDate.getFullYear() - chartMinDate.getFullYear()) * 12;
+    monthCount -= chartMinDate.getMonth();
+    monthCount += chartMaxDate.getMonth();
+
+    let tickValues = [];
+    for (let i = 0; i < monthCount; i++) {
+      chartMinDate.setDate(1);
+      chartMinDate.setMonth(chartMinDate.getMonth() + 1);
+      const pushValue = Math.round((chartMinDate - env.lastDate) / 86400000);
+
+      tickValues.push(pushValue);
+    }
+
+    const tickCountShow = tickValues.length - 2;
+
     env.xAxisSettings = axisBottom(env.x)
-      .ticks(tickCount)
+      .tickValues(tickValues)
       .tickSize(-env.height)
       .tickFormat((d, i) => {
+        let display = d - diffToday;
+        if (display == offsetToday) {
+          return 'now';
+        } else {
+          let d = new Date();
+          d.setDate(d.getDate() + parseInt(display));
+          display = `${d.toLocaleString('default', {
+            month: 'short',
+          })}.${d.getFullYear().toString().substring(2, 4)}`;
+        }
+
         if (i >= tickCountShow) {
-          return d - diffToday;
-        } else if (i % 4 === 0) {
-          return d - diffToday;
+          return display;
+        } else if (i % 4 === 0 && i != tickCountShow - 1) {
+          return display;
         }
       });
 
