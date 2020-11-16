@@ -113,7 +113,12 @@ export function reducer(state = INITIAL_STATE, action) {
 function getExerciseOrder(exercises) {
   let result = [];
   Object.keys(exercises).forEach((key) => {
-    result.push([key, exercises[key].lastUsed, exercises[key].count]);
+    let lastAvg = exercises[key].lastEntries.reduce(
+      (acc, cur) => acc + parseInt(cur[0]) / exercises[key].lastEntries.length,
+      0
+    );
+    lastAvg = Math.round(lastAvg * 10) / 10;
+    result.push([key, exercises[key].lastUsed, lastAvg]);
   });
   result.sort((a, b) => {
     for (let i = 1; i < a.length; i++) {
