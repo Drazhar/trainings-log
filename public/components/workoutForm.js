@@ -91,11 +91,17 @@ class WorkoutForm extends connect(store)(LitElement) {
     this.currentWorkout.exercises[id].id = exerciseId;
     this.requestUpdate(this.currentWorkout, '');
     if (this.exercises[exerciseId].lastEntries) {
-      this.currentWorkout.exercises[id].sets = new Array(
-        this.exercises[exerciseId].lastEntries.length
-      ).fill(
-        new Array(this.exercises[exerciseId].lastEntries[0].length).fill('')
-      );
+      this.currentWorkout.exercises[id].sets = [];
+      for (let i = 0; i < this.exercises[exerciseId].lastEntries.length; i++) {
+        this.currentWorkout.exercises[id].sets.push([]);
+        for (
+          let j = 0;
+          j < this.exercises[exerciseId].lastEntries[0].length;
+          j++
+        ) {
+          this.currentWorkout.exercises[id].sets[i].push(['']);
+        }
+      }
     } else {
       this.currentWorkout.exercises[id].sets = [
         new Array(this.exercises[exerciseId].logs.length).fill(''),
@@ -242,16 +248,16 @@ class WorkoutForm extends connect(store)(LitElement) {
                             <div
                               class="woIncDecBut"
                               for="value_${exIndex}_${setIndex}_${dataIndex}"
-                              @click="${increase}"
+                              @click="${decrease}"
                             >
-                              +
+                              -
                             </div>
                             <div
                               class="woIncDecBut"
                               for="value_${exIndex}_${setIndex}_${dataIndex}"
-                              @click="${decrease}"
+                              @click="${increase}"
                             >
-                              -
+                              +
                             </div>
                           </td> `;
                         })}
