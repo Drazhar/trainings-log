@@ -26,4 +26,8 @@ function logic(e, operator) {
   } else {
     incTarget.value = incTarget.getAttribute('placeholder');
   }
+
+  let event = document.createEvent('HTMLEvents');
+  event.initEvent('change', false, true);
+  incTarget.dispatchEvent(event);
 }

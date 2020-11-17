@@ -146,20 +146,31 @@ class WorkoutForm extends connect(store)(LitElement) {
 
   _saveWorkout(e) {
     e.preventDefault();
-
+    let containsInvalid = false;
     this.currentWorkout.date = document.getElementById('date').value;
     this.currentWorkout.exercises.forEach((exercise, exIndex) => {
       exercise.sets.forEach((currentSet, setIndex) => {
         currentSet.forEach((setData, dataIndex) => {
-          this.currentWorkout.exercises[exIndex].sets[setIndex][
-            dataIndex
-          ] = parseInt(
-            document.getElementById(`value_${exIndex}_${setIndex}_${dataIndex}`)
-              .value
+          const currentElement = document.getElementById(
+            `value_${exIndex}_${setIndex}_${dataIndex}`
           );
+          const value = parseInt(currentElement.value);
+          if (value) {
+            this.currentWorkout.exercises[exIndex].sets[setIndex][
+              dataIndex
+            ] = value;
+          } else {
+            containsInvalid = true;
+            currentElement.classList.add('workout_invalid_input');
+          }
         });
       });
     });
+
+    if (containsInvalid) {
+      return;
+    }
+
     let reduxObj = {};
     reduxObj[this.woId] = this.currentWorkout;
     reduxObj[this.woId].date = new Date(this.currentWorkout.date);
@@ -176,6 +187,15 @@ class WorkoutForm extends connect(store)(LitElement) {
     deleteWorkout(this.woId);
 
     this._closeForm();
+  }
+
+  _checkInput(e) {
+    if (e.target.classList.contains('workout_invalid_input')) {
+      const value = parseInt(e.target.value);
+      if (value) {
+        e.target.classList.remove('workout_invalid_input');
+      }
+    }
   }
 
   render() {
@@ -245,7 +265,8 @@ class WorkoutForm extends connect(store)(LitElement) {
                                     ? placeholder[setIndex][dataIndex]
                                     : ''
                                   : ''}"
-                                style="width:3em"
+                                style="width:2.5em"
+                                @change="${this._checkInput}"
                               />
                               <div
                                 class="woIncDecBut"
