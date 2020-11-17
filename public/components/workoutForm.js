@@ -225,6 +225,7 @@ class WorkoutForm extends connect(store)(LitElement) {
                   <tr>
                     <td>Set</td>
                     ${this.exercises[exercise.id].logs.map((logInfo) => {
+                      console.log(logInfo);
                       return html` <td>${logInfo.name}</td> `;
                     })}
                   </tr>
@@ -232,35 +233,37 @@ class WorkoutForm extends connect(store)(LitElement) {
                     return html`
                       <tr>
                         <td>${setIndex + 1}</td>
-                        ${currentSet.map((setData, dataIndex) => {
-                          return html`<td style="display:flex;">
-                            <input
-                              type="number"
-                              id="value_${exIndex}_${setIndex}_${dataIndex}"
-                              value="${setData}"
-                              placeholder="${placeholder
-                                ? placeholder.length > setIndex
-                                  ? placeholder[setIndex][dataIndex]
-                                  : ''
-                                : ''}"
-                              style="width:3em"
-                            />
-                            <div
-                              class="woIncDecBut"
-                              for="value_${exIndex}_${setIndex}_${dataIndex}"
-                              @click="${decrease}"
-                            >
-                              -
+                        ${currentSet.map(
+                          (setData, dataIndex) => html` <td>
+                            <div class="wo_input">
+                              <input
+                                type="number"
+                                id="value_${exIndex}_${setIndex}_${dataIndex}"
+                                value="${setData}"
+                                placeholder="${placeholder
+                                  ? placeholder.length > setIndex
+                                    ? placeholder[setIndex][dataIndex]
+                                    : ''
+                                  : ''}"
+                                style="width:3em"
+                              />
+                              <div
+                                class="woIncDecBut"
+                                for="value_${exIndex}_${setIndex}_${dataIndex}"
+                                @click="${decrease}"
+                              >
+                                -
+                              </div>
+                              <div
+                                class="woIncDecBut"
+                                for="value_${exIndex}_${setIndex}_${dataIndex}"
+                                @click="${increase}"
+                              >
+                                +
+                              </div>
                             </div>
-                            <div
-                              class="woIncDecBut"
-                              for="value_${exIndex}_${setIndex}_${dataIndex}"
-                              @click="${increase}"
-                            >
-                              +
-                            </div>
-                          </td> `;
-                        })}
+                          </td>`
+                        )}
                         <td>
                           <button
                             style="margin-left:2em"

@@ -29,6 +29,18 @@
     font-weight: 400;
     margin-bottom: 10px;
   }
+
+  table {
+    tbody {
+      tr {
+        td {
+          .wo_input {
+            display: flex;
+          }
+        }
+      }
+    }
+  }
 }
 
 #close-workout {
