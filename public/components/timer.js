@@ -15,9 +15,10 @@ class workoutTimer extends LitElement {
     this.secondsPassed = '00';
   }
 
-  _startTimer() {
+  _startTimer(e) {
+    e.preventDefault();
     try {
-      this._stopTimer();
+      this._stopTimer(e);
     } catch {}
     this.startTime = new Date().getTime();
     this.minutesPassed = '00';
@@ -31,8 +32,9 @@ class workoutTimer extends LitElement {
       } else {
         this.minutesPassed = minutesPassed;
       }
-      const secondsPassed =
-        Math.floor(timePassed / 100 - this.minutesPassed * 600) / 10;
+      const secondsPassed = Math.floor(
+        timePassed / 1000 - this.minutesPassed * 6000
+      );
       if (secondsPassed < 10) {
         this.secondsPassed = '0' + secondsPassed;
       } else {
@@ -41,7 +43,8 @@ class workoutTimer extends LitElement {
     }, 1000);
   }
 
-  _stopTimer() {
+  _stopTimer(e) {
+    e.preventDefault();
     clearInterval(this.interval);
   }
 
@@ -55,6 +58,10 @@ class workoutTimer extends LitElement {
         </div>
       </div>
     `;
+  }
+
+  createRenderRoot() {
+    return this;
   }
 }
 

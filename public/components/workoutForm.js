@@ -208,7 +208,9 @@ class WorkoutForm extends connect(store)(LitElement) {
             name="date"
             value="${this.currentWorkout.date}"
           />
-          <button @click="${this._addExercise}">Add Exercise</button>
+          <button id="add_exercise_button" @click="${this._addExercise}">
+            Add Exercise
+          </button>
           ${this.newWo === false
             ? html`<button @click="${this._deleteWorkout}">
                 Delete Workout
@@ -245,7 +247,6 @@ class WorkoutForm extends connect(store)(LitElement) {
                   <tr>
                     <td>Set</td>
                     ${this.exercises[exercise.id].logs.map((logInfo) => {
-                      console.log(logInfo);
                       return html` <td>${logInfo.name}</td> `;
                     })}
                   </tr>

@@ -70,3 +70,17 @@
 .workout_invalid_input {
   border: 2px solid red;
 }
+
+#add_exercise_button {
+  position: fixed;
+  bottom: 6em;
+  right: 2em;
+}
+
+#timer {
+  background-color: RGBA(var(--background-color-rgb), 1);
+  position: fixed;
+  top: 1em;
+  right: 1em;
+  padding: 0.3em;
+}

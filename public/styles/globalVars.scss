@@ -5,9 +5,11 @@
 $max-white: #f0f0f0;
 $primary-color: #29a6c9;
 $secondary-color: #0be3ae;
+$background-color: #00111a;
 
 :root {
-  --background-color: #00111a;
+  --background-color: #{$background-color};
+  --background-color-rgb: #{hexToRGB($background-color)};
   --background-color-sec: #001724;
 
   --nav-bg-color: #18191a;
