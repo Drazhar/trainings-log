@@ -32,8 +32,8 @@ class workoutTimer extends LitElement {
       } else {
         this.minutesPassed = minutesPassed;
       }
-      const secondsPassed = Math.floor(
-        timePassed / 1000 - this.minutesPassed * 6000
+      const secondsPassed = Math.round(
+        timePassed / 1000 - this.minutesPassed * 60
       );
       if (secondsPassed < 10) {
         this.secondsPassed = '0' + secondsPassed;
